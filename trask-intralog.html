@@ -1,0 +1,1498 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trask-Intralog – řízení skladu a intralogistiky</title>
+<style>
+:root{
+  --bg:#e6e9eb; --surface:#ffffff; --surface2:#f3f5f6; --ink:#17202a; --muted:#56626d;
+  --line:#cbd2d8; --line2:#aeb8c1;
+  --navy:#1f3b5c; --navy-ink:#ffffff;
+  --yellow:#f2c200; --yellow-ink:#2a2200;
+  --ok:#2f7d4a; --warn:#b86e00; --late:#c3302a;
+  --c-free-bg:#f6f8f9; --c-free-bd:#aeb8c1;
+  --c-part-bg:#cfe1f3; --c-part-bd:#5d8fc0;
+  --c-full-bg:#1f3b5c; --c-full-ink:#ffffff; --c-full-bd:#14283f;
+  --c-res-a:#fff1b8; --c-res-b:#f2c200; --c-res-bd:#a88600;
+  --A:#2f6db5; --B:#6a4bc4; --C:#b4561c;
+  --shadow:0 1px 0 rgba(23,32,42,.06);
+  --head:"Barlow Semi Condensed","Barlow","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --trask-logo:#002233; --trask-link:#0055ff;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14191e; --surface:#1d242b; --surface2:#242c34; --ink:#e7ebee; --muted:#9aa6b1;
+    --line:#333d47; --line2:#46525e;
+    --navy:#7fb0e6; --navy-ink:#0c1724;
+    --yellow:#e8b900; --yellow-ink:#1d1700;
+    --ok:#5fbf7f; --warn:#e3a33a; --late:#ff6b62;
+    --c-free-bg:#1a2128; --c-free-bd:#4a5662;
+    --c-part-bg:#1f3a57; --c-part-bd:#5d93cc;
+    --c-full-bg:#7fb0e6; --c-full-ink:#0c1724; --c-full-bd:#a9cbf0;
+    --c-res-a:#3f3508; --c-res-b:#6b5806; --c-res-bd:#e8b900;
+    --A:#78aef0; --B:#a990f0; --C:#ec9a62;
+    --shadow:none; --trask-logo:#ffffff; --trask-link:#7aa7ff;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14191e; --surface:#1d242b; --surface2:#242c34; --ink:#e7ebee; --muted:#9aa6b1;
+  --line:#333d47; --line2:#46525e;
+  --navy:#7fb0e6; --navy-ink:#0c1724;
+  --yellow:#e8b900; --yellow-ink:#1d1700;
+  --ok:#5fbf7f; --warn:#e3a33a; --late:#ff6b62;
+  --c-free-bg:#1a2128; --c-free-bd:#4a5662;
+  --c-part-bg:#1f3a57; --c-part-bd:#5d93cc;
+  --c-full-bg:#7fb0e6; --c-full-ink:#0c1724; --c-full-bd:#a9cbf0;
+  --c-res-a:#3f3508; --c-res-b:#6b5806; --c-res-bd:#e8b900;
+  --A:#78aef0; --B:#a990f0; --C:#ec9a62;
+  --shadow:none; --trask-logo:#ffffff; --trask-link:#7aa7ff;
+  color-scheme:dark;
+}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 var(--body);font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+h1,h2,h3{font-family:var(--head);margin:0;line-height:1.1}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:21;background:var(--surface)}
+.top-in{display:flex;align-items:center;gap:20px;padding:10px 20px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-logo{display:flex;color:var(--trask-logo);flex:none;padding-right:12px;border-right:1px solid var(--line)}
+.tlogo{height:26px;width:auto;display:block}
+.site-foot{border-top:1px solid var(--line);background:var(--surface);color:var(--muted);font-size:13px}
+.site-foot-in{max-width:1700px;margin:0 auto;padding:14px 20px;display:flex;flex-wrap:wrap;gap:6px 24px;align-items:center}
+.site-foot .tlogo{height:14px;color:var(--trask-logo)}
+.site-foot a{color:var(--trask-link);font-weight:600}
+.site-foot .push{margin-left:auto}
+body.v-sk .site-foot{background:var(--sk-bg);color:var(--sk-mut);border-top:3px solid var(--sk-bd);font-size:15px;padding-bottom:calc(190px + env(safe-area-inset-bottom,0px))}
+body.v-sk .site-foot a{color:var(--sk-ink)}
+body.v-sk .site-foot-in{max-width:640px;padding:14px 12px}
+.brand h1{font-size:24px;font-weight:700;letter-spacing:.2px}
+.brand p{margin:0;font-size:13px;color:var(--muted)}
+.tabs{display:flex;gap:4px;margin-left:8px}
+.tabs a{padding:7px 12px;border-radius:6px;text-decoration:none;color:var(--muted);font-weight:600}
+.tabs a:hover{background:var(--surface2);color:var(--ink)}
+.tabs a[aria-current="page"]{background:var(--navy);color:var(--navy-ink)}
+.kpis{display:flex;gap:14px;margin-left:auto;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.kpis b{display:block;font:700 18px var(--head);color:var(--ink)}
+.clock{font:600 18px var(--head)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line2);background:var(--surface);border-radius:6px;padding:6px 11px;cursor:pointer;font-weight:600;font-size:14px;line-height:1.2}
+.btn:hover{background:var(--surface2)}
+.btn.primary{background:var(--navy);border-color:var(--navy);color:var(--navy-ink)}
+.btn.primary:hover{filter:brightness(1.1)}
+.btn.agv{border-color:var(--yellow);background:var(--yellow);color:var(--yellow-ink)}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--muted)}
+.btn.small{padding:4px 8px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+main{padding:16px 20px 40px;max-width:1700px;margin:0 auto}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow)}
+
+/* legend */
+.legend{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;padding:10px 14px;margin-bottom:14px;font-size:13px}
+.legend .item{display:flex;align-items:center;gap:7px}
+.sw{width:22px;height:16px;border-radius:3px;border:1px solid var(--line2);flex:none}
+.sw.free{background:var(--c-free-bg);border:1px dashed var(--c-free-bd)}
+.sw.part{background:var(--c-part-bg);border-color:var(--c-part-bd)}
+.sw.full{background:var(--c-full-bg);border-color:var(--c-full-bd)}
+.sw.res{background:repeating-linear-gradient(135deg,var(--c-res-b) 0 4px,var(--c-res-a) 4px 8px);border-color:var(--c-res-bd)}
+.legend .note{margin-left:auto;color:var(--muted)}
+
+/* hall */
+.hall{display:grid;grid-template-columns:minmax(220px,1fr) 176px minmax(400px,2.3fr) 176px minmax(270px,1.35fr);gap:0;align-items:stretch;min-height:560px}
+.zone{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.zone-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.zone-head h2{font-size:22px;font-weight:700}
+.zone-head .sub{color:var(--muted);font-size:13px}
+.zone-head .btn{margin-left:auto}
+.empty{color:var(--muted);font-size:14px;padding:12px;border:1px dashed var(--line2);border-radius:8px;text-align:center}
+
+/* lanes – painted aisle */
+.lane{position:relative;padding:14px 10px;display:flex;flex-direction:column;gap:10px;min-width:0;
+  background:linear-gradient(90deg,transparent 6px,var(--yellow) 6px 9px,transparent 9px calc(100% - 9px),var(--yellow) calc(100% - 9px) calc(100% - 6px),transparent calc(100% - 6px))}
+.lane-head{text-align:center;font:700 15px var(--head);color:var(--muted)}
+.lane-head span{display:block;font:500 12px var(--body)}
+.lane .empty{font-size:12px;background:color-mix(in srgb,var(--bg) 70%,transparent)}
+
+.pcard,.tcard{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:6px}
+.tcard{border-left:4px solid var(--navy)}
+.tcard.m-AGV{border-left-color:var(--yellow)}
+.row{display:flex;align-items:center;gap:8px}
+.row .grow{flex:1;min-width:0}
+.pid{border:0;background:none;padding:0;font-weight:700;cursor:pointer;text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:3px}
+.pid:hover{text-decoration-color:currentColor}
+.pack{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 5px;border-radius:4px;font:700 13px var(--head);color:#fff}
+.pack-A{background:var(--A)} .pack-B{background:var(--B)} .pack-C{background:var(--C)}
+:root[data-theme="dark"] .pack{color:#0c1724}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .pack{color:#0c1724}}
+.pname{font-weight:600;line-height:1.25}
+.meta{color:var(--muted);font-size:13px}
+.wbar{height:6px;border-radius:3px;background:var(--surface2);overflow:hidden;border:1px solid var(--line)}
+.wbar span{display:block;height:100%;background:var(--ok)}
+.okline{font-size:13px;color:var(--ok);font-weight:600}
+.mode{font:700 12px var(--head);padding:2px 6px;border-radius:4px;background:var(--surface2);border:1px solid var(--line2)}
+.mode.AGV{background:var(--yellow);color:var(--yellow-ink);border-color:var(--yellow)}
+.prog{height:8px;border-radius:4px;background:var(--surface2);border:1px solid var(--line);overflow:hidden}
+.prog span{display:block;height:100%;background:var(--yellow);transition:width .45s linear}
+.prog.manual span{width:100%!important;background:repeating-linear-gradient(90deg,var(--navy) 0 10px,transparent 10px 20px);background-size:20px 100%;animation:roll 1s linear infinite;opacity:.55}
+@keyframes roll{to{background-position:20px 0}}
+.route{font-size:13px}
+.route b{font-family:var(--head)}
+
+/* warehouse */
+.stats{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.stats b{color:var(--ink);font:700 16px var(--head)}
+.rack{border-top:1px solid var(--line);padding-top:10px}
+.rack-head{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
+.rack-head h3{font-size:17px}
+.rack-head span{color:var(--muted);font-size:13px}
+.cells{display:grid;gap:6px;grid-template-columns:repeat(auto-fill,minmax(var(--cw),1fr))}
+.cell{position:relative;text-align:left;border:1px solid var(--line2);border-radius:6px;padding:7px 8px;cursor:pointer;min-height:var(--ch);display:flex;flex-direction:column;gap:3px;background:var(--surface)}
+.cell .cid{font:700 14px var(--head)}
+.cell .cmat{font-size:12.5px;line-height:1.2;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.cell .ccap{font-size:12px;color:var(--muted);margin-top:auto}
+.cell.free{background:var(--c-free-bg);border:1px dashed var(--c-free-bd)}
+.cell.free .cmat{color:var(--muted)}
+.cell.part{background:var(--c-part-bg);border-color:var(--c-part-bd)}
+.cell.full{background:var(--c-full-bg);border-color:var(--c-full-bd);color:var(--c-full-ink)}
+.cell.full .ccap{color:inherit;opacity:.8}
+.cell.res{background:repeating-linear-gradient(135deg,var(--c-res-b) 0 6px,var(--c-res-a) 6px 14px);border:2px solid var(--c-res-bd);color:var(--ink)}
+.cell.res .cmat{background:var(--c-res-a);border-radius:3px;padding:0 3px;align-self:flex-start}
+.cell:hover{filter:brightness(.97)}
+.pips{display:flex;gap:3px;margin-top:auto;flex-wrap:wrap}
+.pip{width:11px;height:11px;border-radius:2px;border:1px solid currentColor;opacity:.75}
+.pip.on{background:currentColor;opacity:1}
+.pip.rs{background:var(--yellow);border-color:var(--c-res-bd);opacity:1}
+.cell.full .pip.on{background:var(--c-full-ink)}
+.cell .flag{position:absolute;top:6px;right:6px;font:700 11px var(--head);padding:1px 4px;border-radius:3px;background:var(--yellow);color:var(--yellow-ink)}
+
+/* production */
+.ws{border:1px solid var(--line);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px;background:var(--surface2)}
+.ws-head{display:flex;align-items:center;gap:8px}
+.ws-head h3{font-size:18px;flex:1}
+.rq{background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:9px;display:flex;flex-direction:column;gap:6px}
+.rq.late{border-color:var(--late)}
+.cd{font:700 15px var(--head);white-space:nowrap}
+.cd.ok{color:var(--ok)} .cd.warn{color:var(--warn)} .cd.late{color:var(--late)}
+.why{font-size:13px;background:var(--surface2);border-left:3px solid var(--navy);padding:6px 8px;border-radius:0 5px 5px 0}
+.why.wait{border-left-color:var(--warn)}
+.acts{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.done{font-size:13px;display:flex;flex-direction:column;gap:3px;border-top:1px dashed var(--line2);padding-top:6px}
+.done .row{gap:6px}
+.tag{font-size:12px;font-weight:600;padding:1px 6px;border-radius:10px;border:1px solid currentColor}
+.tag.ok{color:var(--ok)} .tag.late{color:var(--late)}
+
+/* tables & tabs */
+.page h2{font-size:24px;margin-bottom:6px}
+.page p.lead{color:var(--muted);margin:0 0 14px;max-width:75ch}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:16px}
+.box{padding:16px}
+.box h3{font-size:19px;margin-bottom:10px}
+.box p,.box li{max-width:75ch}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--head);font-weight:700;font-size:14px;color:var(--muted);background:var(--surface2)}
+td.c,th.c{text-align:center}
+tr.clk{cursor:pointer} tr.clk:hover td{background:var(--surface2)}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.st{display:inline-block;padding:3px 9px;border-radius:12px;font-size:13px;font-weight:600;border:1px solid var(--line2);background:var(--surface2);white-space:nowrap}
+.st.PRIJEM{border-color:var(--C)} .st.CESTA_SKLAD,.st.CESTA_VYROBA{background:var(--yellow);color:var(--yellow-ink);border-color:var(--yellow)}
+.st.SKLAD{background:var(--c-part-bg);border-color:var(--c-part-bd)} .st.VYROBA{background:var(--navy);color:var(--navy-ink);border-color:var(--navy)}
+ol.steps{margin:0;padding-left:22px} ol.steps li{margin:4px 0}
+.log{max-height:560px;overflow:auto;font-size:13.5px}
+.log div{padding:6px 2px;border-bottom:1px solid var(--line);display:flex;gap:10px}
+.log time{color:var(--muted);flex:none;width:92px}
+
+/* modal */
+.backdrop{position:fixed;inset:0;background:rgba(10,15,20,.5);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.modal{background:var(--surface);border-radius:12px;width:min(620px,100%);max-height:calc(100% - 32px);overflow:auto;padding:20px;border:1px solid var(--line)}
+.modal h2{font-size:24px;margin-bottom:4px}
+.modal .x{float:right}
+.target{display:flex;align-items:center;gap:14px;margin:14px 0;padding:12px 14px;border-radius:8px;background:repeating-linear-gradient(135deg,var(--c-res-b) 0 6px,var(--c-res-a) 6px 14px);border:2px solid var(--c-res-bd)}
+.target b{font:700 34px var(--head);background:var(--c-res-a);padding:0 8px;border-radius:5px}
+.target span{background:var(--c-res-a);padding:2px 6px;border-radius:4px;font-size:14px}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.choice .btn{flex-direction:column;align-items:flex-start;padding:12px;text-align:left}
+.choice .btn small{font-weight:400;font-size:12.5px;opacity:.85}
+.field{display:flex;flex-direction:column;gap:4px;margin:12px 0}
+.field label{font-weight:600}
+.field select,.field input{font:inherit;padding:8px 10px;border:1px solid var(--line2);border-radius:6px;background:var(--surface);color:var(--ink)}
+.msg{font-size:14px;padding:8px 10px;border-radius:6px;margin-top:8px}
+.msg.err{background:color-mix(in srgb,var(--late) 14%,transparent);color:var(--late);font-weight:600}
+.msg.ok{background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:5px 12px;font-size:14px;margin:12px 0}
+.kv dt{color:var(--muted)} .kv dd{margin:0}
+.hist{font-size:13.5px;border-left:2px solid var(--line2);margin:8px 0 0 4px;padding-left:12px}
+.hist div{margin:5px 0}
+.hist time{color:var(--muted);margin-right:6px}
+.foot{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+
+.toasts{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px;z-index:60}
+.toast{background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:8px;font-size:14px;max-width:340px;box-shadow:0 6px 18px rgba(0,0,0,.2)}
+.toast.err{background:var(--late);color:#fff}
+
+details.howto{margin-bottom:14px}
+details.howto summary{cursor:pointer;font-weight:600;padding:10px 14px}
+details.howto ol{margin:0 14px 12px;padding-left:20px;font-size:14px}
+
+@media (max-width:1240px){
+  .hall{grid-template-columns:1fr;gap:0}
+  .lane{flex-direction:row;flex-wrap:wrap;align-items:flex-start;padding:16px 10px;background:linear-gradient(180deg,transparent 6px,var(--yellow) 6px 9px,transparent 9px calc(100% - 9px),var(--yellow) calc(100% - 9px) calc(100% - 6px),transparent calc(100% - 6px))}
+  .lane-head{width:100%;text-align:left}
+  .lane .tcard{width:220px}
+  .lane .empty{flex:1}
+}
+@media (max-width:640px){
+  .top-in{padding:10px 12px;gap:10px}
+  .kpis{margin-left:0;width:100%}
+  main{padding:12px}
+  .grid2{grid-template-columns:1fr}
+  .choice{grid-template-columns:1fr}
+  .kv{grid-template-columns:1fr}
+  .legend .note{margin-left:0}
+}
+/* ---------- přepínač pohledů ---------- */
+.viewswitch{display:flex;border:2px solid var(--navy);border-radius:8px;overflow:hidden;flex:none}
+.viewswitch a{padding:7px 16px;font:700 16px var(--head);text-decoration:none;color:var(--navy)}
+.viewswitch a[aria-current="page"]{background:var(--navy);color:var(--navy-ink)}
+
+/* ---------- pohled Skladník ---------- */
+:root{--sk-bg:#ffffff;--sk-card:#ffffff;--sk-ink:#000000;--sk-mut:#24282c;--sk-bd:#000000;--sk-ok:#00702a;--sk-err:#c8001c;--sk-amber:#ffd400;--sk-blue:#0b3a75;--sk-off:#e9ebed}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--sk-bg:#000000;--sk-card:#0d0d0d;--sk-ink:#ffffff;--sk-mut:#e2e5e8;--sk-bd:#ffffff;--sk-ok:#3ee07c;--sk-err:#ff5a6a;--sk-blue:#2f6fd6;--sk-off:#1c1f22}}
+:root[data-theme="dark"]{--sk-bg:#000000;--sk-card:#0d0d0d;--sk-ink:#ffffff;--sk-mut:#e2e5e8;--sk-bd:#ffffff;--sk-ok:#3ee07c;--sk-err:#ff5a6a;--sk-blue:#2f6fd6;--sk-off:#1c1f22}
+body.v-sk{background:var(--sk-bg);color:var(--sk-ink);font-size:20px}
+body.v-sk .tabs,body.v-sk .kpis,body.v-sk .clock,body.v-sk .brand p{display:none}
+body.v-sk .top{background:var(--sk-bg);border-bottom:3px solid var(--sk-bd)}
+body.v-sk::before{background:var(--sk-bg)}
+body.v-sk .top-in{padding:8px 12px;gap:10px}
+body.v-sk .viewswitch{border-color:var(--sk-bd)}
+body.v-sk .viewswitch a{padding:10px 18px;font-size:19px;color:var(--sk-ink)}
+body.v-sk .viewswitch a[aria-current="page"]{background:var(--sk-ink);color:var(--sk-bg)}
+body.v-sk .reset{margin-left:auto;font-size:13px;padding:6px 8px;background:var(--sk-card);color:var(--sk-ink);border-color:var(--sk-bd)}
+body.v-sk main{max-width:640px;padding:12px 12px 24px}
+.sk-title{display:flex;align-items:baseline;gap:10px;font:700 30px var(--head);margin:4px 0 10px}
+.sk-group{font:700 19px var(--head);margin:16px 0 8px;color:var(--sk-mut)}
+.sk-list{display:flex;flex-direction:column;gap:10px}
+.sk-card{position:relative;display:flex;flex-direction:column;gap:3px;width:100%;text-align:left;background:var(--sk-card);color:var(--sk-ink);border:3px solid var(--sk-bd);border-left-width:14px;border-radius:12px;padding:12px 14px;cursor:pointer}
+.sk-card.V{border-left-color:var(--sk-blue)}
+.sk-card.Z{border-left-color:#7a8590}
+.sk-card.first{box-shadow:0 0 0 5px var(--sk-amber)}
+.sk-card.off{background:var(--sk-off)}
+.sk-card.is-late{border-color:var(--sk-err)}
+.sk-next{align-self:flex-start;background:var(--sk-amber);color:#000;font:700 16px var(--head);padding:2px 8px;border-radius:6px;margin-bottom:2px}
+.sk-new{align-self:flex-start;background:var(--sk-err);color:#fff;font:700 16px var(--head);padding:2px 8px;border-radius:6px}
+.sk-type{font:700 17px var(--head);color:var(--sk-mut)}
+.sk-main{font:700 27px/1.15 var(--head)}
+.sk-sub{font-size:18px}
+.sk-cd{font:700 30px var(--head);align-self:flex-start}
+.sk-cd.ok{color:var(--sk-ok)}
+.sk-cd.last{color:var(--sk-err)}
+.sk-cd.late{background:var(--sk-err);color:#fff;padding:2px 10px;border-radius:6px;animation:skpulse 1s steps(2) infinite}
+@keyframes skpulse{50%{outline:4px solid var(--sk-err);outline-offset:3px}}
+.sk-empty{border:3px dashed var(--sk-bd);border-radius:12px;padding:24px;text-align:center;font-size:20px}
+.sk-head{display:flex;align-items:center;gap:12px;margin:4px 0 12px}
+.sk-backbtn{min-height:54px;padding:0 16px;font:700 20px var(--head);border:3px solid var(--sk-bd);border-radius:10px;background:var(--sk-card);color:var(--sk-ink);cursor:pointer}
+.sk-label{font:700 24px var(--head);margin-top:6px}
+.sk-big{font:700 clamp(64px,22vw,104px)/1 var(--head);margin:4px 0 6px;word-break:break-word}
+.sk-big.mid{font-size:clamp(48px,15vw,72px)}
+.sk-text{font-size:21px}
+.sk-reason{border:3px solid var(--sk-bd);border-radius:10px;padding:12px 14px;font-size:18px;margin-top:14px}
+.sk-reason b{display:block;font:700 20px var(--head);margin-bottom:4px}
+.sk-reason ol{margin:6px 0 0;padding-left:22px}
+.sk-reason li{margin:4px 0}
+.sk-reason.err{border-color:var(--sk-err);color:var(--sk-err)}
+.sk-prio{display:block;width:100%;text-align:left;background:var(--sk-err);color:#fff;border:0;border-radius:10px;padding:12px 14px;font:700 19px/1.25 var(--head);margin-bottom:12px;cursor:pointer}
+.sk-prio .sk-cd{display:block;color:#fff;background:none;animation:none;padding:0;font-size:24px}
+.sk-bar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--sk-bg);border-top:3px solid var(--sk-bd);padding:10px 12px calc(12px + env(safe-area-inset-bottom,0px))}
+.sk-bar-in{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
+.sk-btn{min-height:78px;width:100%;border-radius:12px;border:3px solid var(--sk-bd);font:700 27px var(--head);background:var(--sk-card);color:var(--sk-ink);cursor:pointer}
+.sk-btn.main{background:var(--sk-blue);border-color:var(--sk-blue);color:#fff}
+.sk-btn.agv{background:var(--sk-amber);border-color:#000;color:#000}
+.sk-hint{font-size:16px;text-align:center;color:var(--sk-mut)}
+.sk-hint b{font-family:var(--head);font-size:18px}
+.sk-flash{position:fixed;inset:0;z-index:80;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px;padding:24px 20px calc(24px + env(safe-area-inset-bottom,0px));text-align:center;color:#fff;cursor:pointer}
+.sk-flash.ok{background:#00702a}
+.sk-flash.err{background:#c8001c}
+.sk-flash .ic{font:700 110px/1 var(--head)}
+.sk-flash h2{font-size:38px}
+.sk-flash .bigc{font:700 clamp(64px,22vw,110px)/1 var(--head);background:#fff;color:#c8001c;padding:4px 18px;border-radius:12px}
+.sk-flash p{font-size:23px;max-width:26ch;margin:0}
+.sk-flash button{min-height:78px;width:min(600px,100%);border:3px solid #fff;background:transparent;color:#fff;font:700 27px var(--head);border-radius:12px;margin-top:14px;cursor:pointer}
+.sk-alert{position:fixed;left:0;right:0;top:0;z-index:70;background:var(--sk-amber);color:#000;border-bottom:8px solid #c8001c;padding:calc(14px + env(safe-area-inset-top,0px)) 16px 16px;animation:skalert .5s steps(2) 6}
+.sk-alert-in{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
+.sk-alert h2{font-size:30px}
+.sk-alert p{margin:0;font-size:21px}
+.sk-alert .row2{display:grid;grid-template-columns:1.4fr 1fr;gap:8px;margin-top:6px}
+.sk-alert .sk-btn{min-height:70px;font-size:23px;border-color:#000;background:#fff;color:#000}
+.sk-alert .sk-btn.main{background:#000;color:#fff;border-color:#000}
+@keyframes skalert{50%{background:#fff}}
+@media (max-width:480px){body.v-sk .brand-text{display:none}body.v-sk .brand-logo{padding-right:0;border:0}body.v-sk .tlogo{height:18px}.site-foot .push{margin-left:0}body.v-sk .top-in{row-gap:6px}body.v-sk .viewswitch a{padding:10px 14px}}
+/* ---------- pohled Vedoucí ---------- */
+body.v-ved .tabs,body.v-ved .kpis{display:none}
+body.v-ved .reset{margin-left:auto}
+.ved-kpis{display:grid;grid-template-columns:1.35fr .8fr 1fr 1.25fr;gap:14px;margin-bottom:16px;align-items:start}
+.kpi h3{font-size:18px;margin-bottom:8px}
+.kpi h4{font:700 15px var(--head);margin:12px 0 4px}
+.kbig{font:700 46px/1 var(--head);margin:2px 0 6px}
+.kbig.warn{color:var(--warn)}
+.occ{margin:8px 0 10px}
+.occ-head{display:flex;justify-content:space-between;font-weight:600;font-size:14px}
+.occ-head b{font:700 17px var(--head)}
+.obar{display:flex;height:16px;border-radius:4px;overflow:hidden;border:1px solid var(--line2);margin:4px 0}
+.obar span.full{background:var(--c-full-bg)} .obar span.part{background:var(--c-part-bg)}
+.obar span.res{background:repeating-linear-gradient(135deg,var(--c-res-b) 0 4px,var(--c-res-a) 4px 8px)} .obar span.free{background:var(--c-free-bg)}
+.kl{display:grid;grid-template-columns:1fr auto;gap:3px 10px;font-size:14px;margin:6px 0 0}
+.kl dt{color:var(--muted)} .kl dd{margin:0;font-weight:700}
+.kli{list-style:none;margin:6px 0 0;padding:0;font-size:14px}
+.kli li{padding:6px 0;border-top:1px solid var(--line)}
+.kli.risk li{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.ved .sk-cd{font-size:17px;flex:none}
+.ved .sk-cd.ok{color:var(--ok)} .ved .sk-cd.last{color:var(--late)}
+.ved .sk-cd.late{background:var(--late);color:#fff;padding:1px 7px;border-radius:5px}
+.meta.small{font-size:12.5px;margin-top:10px}
+.ved-main{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;align-items:start}
+.rec{border:1px solid var(--line);border-left:6px solid var(--yellow);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.rec-head{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-weight:600}
+.tagnew{background:var(--late);color:#fff;font:700 12px var(--head);padding:2px 7px;border-radius:5px}
+.rec-move{display:flex;align-items:center;gap:12px;font:700 22px var(--head)}
+.cellchip{display:inline-flex;flex-direction:column;align-items:center;padding:4px 12px;border-radius:6px;background:var(--c-part-bg);border:1px solid var(--c-part-bd);line-height:1.1}
+.cellchip.to{background:var(--c-free-bg);border:2px dashed var(--c-free-bd)}
+.cellchip small{font:600 12px var(--body)}
+.rec .why{margin:0}
+.vtr{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.vtr-row{border:1px solid var(--line);border-radius:7px;padding:8px 10px;display:flex;flex-direction:column;gap:5px}
+.log.short{max-height:none}
+.tcard .badge{font:700 11px var(--head);padding:1px 5px;border-radius:3px;background:var(--navy);color:var(--navy-ink);align-self:flex-start}
+@media (max-width:1240px){.ved-kpis{grid-template-columns:1fr 1fr}.ved-main{grid-template-columns:1fr}}
+@media (max-width:640px){.ved-kpis{grid-template-columns:1fr}.kbig{font-size:40px}.rec .acts .btn{flex:1 1 100%;min-height:44px}}
+@media (max-width:480px){.viewswitch a{padding:8px 10px;font-size:15px}body.v-sk .viewswitch a{padding:10px 10px;font-size:17px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <a class="brand-logo" href="https://www.thetrask.com" target="_blank" rel="noopener" title="Trask – www.thetrask.com"><svg class="tlogo" viewBox="0 0 1496.36 485.56" role="img" aria-label="Trask"><path fill="currentColor" d="M231.8 209.6 L231.8 129.5 L151.8 129.5 L151.8 45.7 L57.5 45.7 L57.5 129.6 L0 129.6 L0 209.6 L57.5 209.6 L57.5 358.2 L58.1 372.2 L59.9 385.5 L62.9 398.2 L66.9 410.1 L72.1 421.2 L78.2 431.6 L85.3 441.1 L93.4 449.7 L102.2 457.5 L112 464.3 L122.4 470.2 L133.6 475.1 L145.5 479 L158 481.8 L171.1 483.5 L184.7 484 L187.6 484 L190.5 483.9 L193.5 483.7 L196.5 483.5 L199.5 483.2 L202.5 482.9 L205.6 482.5 L208.6 482 L211.6 481.5 L214.6 481 L217.6 480.3 L220.5 479.7 L223.4 478.9 L226.3 478.2 L229.1 477.3 L231.8 476.4 L231.8 400.2 L230.4 400.7 L228.8 401.2 L227.2 401.6 L225.6 402 L223.9 402.4 L222.2 402.7 L220.5 403 L218.7 403.3 L217 403.5 L215.2 403.7 L213.5 403.8 L211.8 404 L210.1 404 L208.4 404 L206.8 404 L205.2 404 L199.2 403.8 L193.5 403.1 L188.1 402 L183 400.5 L178.3 398.6 L173.9 396.3 L169.8 393.7 L166.2 390.6 L162.9 387.2 L160 383.5 L157.6 379.4 L155.5 375 L153.9 370.3 L152.8 365.3 L152.1 360 L151.8 354.4 L151.8 209.6 L231.8 209.6ZM684.7 342.1 L684.7 326.8 L666.4 326.8 L649.9 327.3 L635.1 328.4 L622 330 L610.5 332.1 L600.4 334.6 L591.7 337.5 L584.4 340.7 L578.2 344.3 L573.1 348.2 L569.1 352.4 L566 356.9 L563.7 361.6 L562.2 366.4 L561.4 371.5 L561.1 376.6 L561.3 380.2 L562 383.8 L563 387.3 L564.4 390.7 L566.1 394 L568.2 397.2 L570.7 400.2 L573.4 403 L576.5 405.6 L579.9 407.9 L583.5 410 L587.5 411.7 L591.6 413.1 L596 414.1 L600.7 414.8 L605.5 415 L614.5 414.7 L623 413.6 L631.1 411.9 L638.7 409.6 L645.7 406.6 L652.2 403.1 L658.2 399 L663.6 394.4 L668.4 389.3 L672.6 383.7 L676.3 377.7 L679.3 371.3 L681.6 364.5 L683.3 357.3 L684.4 349.9 L684.7 342.1ZM779.1 269.9 L779.1 480.3 L698.8 480.3 L692.9 445.7 L687.3 450.2 L681.5 454.4 L675.5 458.4 L669.4 462.1 L663.1 465.5 L656.6 468.6 L650 471.5 L643.3 474.1 L636.5 476.4 L629.5 478.4 L622.5 480.1 L615.4 481.5 L608.2 482.6 L600.9 483.4 L593.6 483.9 L586.2 484.1 L572.8 483.6 L560.1 482.1 L548 479.7 L536.7 476.4 L526.1 472.2 L516.3 467.3 L507.3 461.6 L499.1 455.2 L491.7 448.2 L485.3 440.5 L479.7 432.3 L475.2 423.6 L471.5 414.4 L468.9 404.7 L467.3 394.7 L466.8 384.3 L467.3 371.6 L469.1 359.4 L472.1 347.7 L476.6 336.6 L482.6 326.1 L490.3 316.3 L499.7 307.2 L511.1 298.9 L524.5 291.4 L540 284.8 L557.8 279 L577.9 274.2 L600.6 270.4 L625.8 267.6 L653.8 265.9 L684.7 265.3 L684.3 255.8 L683.1 247.2 L681 239.4 L678.1 232.4 L674.1 226.3 L669.2 220.9 L663.3 216.3 L656.2 212.3 L648.1 209.1 L638.8 206.5 L628.2 204.4 L616.4 203 L603.3 202.1 L588.9 201.8 L573.1 201.9 L555.8 202.4 L555.8 121 L583.6 120.9 L609.5 122 L633.4 124.4 L655.5 128 L675.6 132.9 L693.9 139 L710.4 146.4 L725 155.1 L737.9 165 L748.9 176.2 L758.2 188.6 L765.8 202.3 L771.6 217.3 L775.8 233.6 L778.2 251.1 L779.1 269.9ZM915.6 367.3 L915.9 372.1 L916.6 376.7 L917.8 381.1 L919.4 385.3 L921.5 389.3 L923.9 393 L926.8 396.5 L930.1 399.7 L933.8 402.5 L937.8 405.1 L942.2 407.3 L946.9 409.1 L952 410.6 L957.4 411.6 L963.1 412.3 L969.1 412.5 L975.4 412.4 L981.4 411.9 L986.9 411.1 L992.1 410.1 L996.9 408.7 L1001.3 407.1 L1005.2 405.3 L1008.8 403.2 L1012 400.8 L1014.7 398.3 L1017.1 395.5 L1019 392.5 L1020.5 389.4 L1021.6 386 L1022.2 382.5 L1022.5 378.9 L1020.3 368.7 L1014.2 360.4 L1004.7 353.6 L992.3 347.8 L977.7 342.7 L961.4 338 L944 333.3 L926 328.2 L908 322.3 L890.6 315.3 L874.3 306.9 L859.7 296.6 L847.4 284.1 L837.9 269.1 L831.8 251.1 L829.6 229.8 L830.2 218.8 L832.1 208.1 L835.1 197.9 L839.2 188.1 L844.5 178.9 L850.8 170.2 L858.2 162.1 L866.5 154.7 L875.9 147.9 L886.1 141.9 L897.2 136.7 L909.2 132.4 L922 128.9 L935.6 126.4 L950 124.8 L965 124.3 L981.5 124.8 L996.9 126.4 L1011.4 128.9 L1024.9 132.5 L1037.5 136.9 L1049 142.2 L1059.5 148.3 L1069 155.3 L1077.5 162.9 L1085 171.3 L1091.4 180.3 L1096.8 189.9 L1101.1 200.2 L1104.4 210.9 L1106.7 222.2 L1107.8 233.9 L1017.6 233.9 L1017.5 230.6 L1016.9 227.3 L1015.9 224 L1014.4 220.8 L1012.5 217.7 L1010.3 214.7 L1007.6 211.8 L1004.5 209.1 L1001.2 206.6 L997.4 204.3 L993.4 202.3 L989.1 200.6 L984.5 199.2 L979.7 198.1 L974.6 197.5 L969.3 197.3 L964.1 197.5 L959.1 197.9 L954.5 198.7 L950.1 199.7 L946.1 201 L942.4 202.6 L939 204.3 L935.9 206.3 L933.2 208.4 L930.8 210.8 L928.7 213.2 L927.1 215.8 L925.7 218.5 L924.8 221.3 L924.2 224.2 L924 227.1 L926.2 237.3 L932.3 245.6 L941.8 252.4 L954.2 258.1 L968.8 263 L985 267.7 L1002.5 272.3 L1020.4 277.4 L1038.4 283.2 L1055.9 290.2 L1072.1 298.8 L1086.7 309.3 L1099.1 322 L1108.6 337.5 L1114.7 356 L1116.9 377.9 L1116.3 388.6 L1114.4 399.1 L1111.4 409.3 L1107.2 419.1 L1101.9 428.5 L1095.5 437.3 L1088 445.7 L1079.4 453.4 L1069.9 460.4 L1059.4 466.7 L1047.9 472.2 L1035.5 476.9 L1022.2 480.6 L1008.1 483.3 L993.1 485 L977.4 485.6 L959.1 485 L942.1 483.5 L926.4 480.8 L911.8 477.2 L898.4 472.7 L886.2 467.2 L875.2 460.8 L865.3 453.5 L856.5 445.4 L848.8 436.4 L842.3 426.7 L836.8 416.2 L832.4 405 L829 393.1 L826.7 380.5 L825.4 367.3 L915.6 367.3ZM503.7 121 L486.3 121.5 L470.4 123.2 L455.9 125.7 L442.7 129 L430.9 132.9 L420.3 137.3 L410.9 141.9 L402.8 146.7 L395.7 151.6 L389.8 156.2 L384.9 160.6 L381 164.5 L378 167.8 L376 170.4 L374.8 172 L374.4 172.6 L368.1 129.5 L287.5 129.5 L287.5 480.2 L381.9 480.2 L381.9 293.5 L382.3 284.9 L383.6 276.4 L385.8 267.9 L388.8 259.7 L392.9 251.7 L397.8 244.1 L403.7 236.9 L410.7 230.2 L418.6 224 L427.5 218.4 L437.5 213.6 L448.5 209.5 L460.7 206.3 L473.9 204 L488.2 202.7 L503.7 202.4 L503.7 121ZM1389.7 480.2 L1496.4 480.2 L1341.2 296.1 L1479.9 129.6 L1373.3 129.6 L1258.4 267.2 L1258.4 0 L1164 0 L1164 480.3 L1258.4 480.3 L1258.4 324.3 L1389.7 480.3Z"/></svg></a>
+      <div class="brand-text"><h1>Trask-Intralog</h1><p>Řízení skladu a intralogistiky · prototyp</p></div>
+    </div>
+    <nav class="viewswitch" aria-label="Pohled">
+      <a href="#hala" data-view="hala">Hala</a>
+      <a href="#skladnik" data-view="skladnik">Skladník</a>
+      <a href="#vedouci" data-view="vedouci">Vedoucí</a>
+    </nav>
+    <nav class="tabs" aria-label="Sekce haly">
+      <a href="#hala" data-tab="hala">Přehled haly</a>
+      <a href="#obaly" data-tab="obaly">Obaly a události</a>
+      <a href="#pravidla" data-tab="pravidla">Pravidla</a>
+    </nav>
+    <div class="kpis" id="kpis"></div>
+    <div class="clock" id="clock"></div>
+    <button class="btn reset" data-action="reset-ask">Obnovit ukázková data</button>
+  </div>
+</header>
+<main id="app"></main>
+<footer class="site-foot">
+  <div class="site-foot-in">
+    <span>© 2026 Trask Solutions. Všechna práva vyhrazena.</span>
+    <span>Trask-Intralog · prototyp vytvořený s pomocí AI, všechna data jsou smyšlená</span>
+    <a class="push" href="https://www.thetrask.com" target="_blank" rel="noopener">www.thetrask.com</a>
+  </div>
+</footer>
+<div id="sk-alert"></div>
+<div id="sk-flash"></div>
+<div id="modal-root"></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+/* ---------- konstanty pravidel ---------- */
+const STORAGE_KEY = 'skladflow-state-v1';
+const AGV_MS = 15000;
+const PACK = {
+  A: {desc: 'malý přepravní box', max: 15},
+  B: {desc: 'velký přepravní box', max: 40},
+  C: {desc: 'paleta', max: 800}
+};
+const CELLTYPE = {
+  5: {name: 'malá police', cap: {A: 1}},
+  3: {name: 'střední police', cap: {A: 2, B: 1}},
+  1: {name: 'paletové místo', cap: {A: 4, B: 2, C: 1}}
+};
+const ORDER = {A: [5, 3, 1], B: [3, 1], C: [1]};
+const STATES = {
+  PRIJEM: 'Na příjmu', CESTA_SKLAD: 'Na cestě do skladu', SKLAD: 'Zaskladněno',
+  CESTA_VYROBA: 'Na cestě do výroby', VYROBA: 'Ve výrobě'
+};
+const WS = {L1: 'Linka 1', L2: 'Linka 2', MON: 'Montáž'};
+const MODES = {AGV: 'AGV', RUCNI: 'Ručně vedený vozík'};
+const RACKS = [
+  {id: 'R1', type: 1, count: 4, cw: '130px', ch: '96px'},
+  {id: 'R2', type: 3, count: 6, cw: '108px', ch: '86px'},
+  {id: 'R3', type: 5, count: 8, cw: '92px', ch: '80px'}
+];
+
+/* ---------- pomocné ---------- */
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad = (n, l = 4) => String(n).padStart(l, '0');
+const kg = n => Number(n).toLocaleString('cs-CZ', {maximumFractionDigits: 1}) + ' kg';
+const fmt = ts => {
+  const d = new Date(ts);
+  return d.toLocaleDateString('cs-CZ', {day: 'numeric', month: 'numeric'}) + ' ' +
+         d.toLocaleTimeString('cs-CZ', {hour: '2-digit', minute: '2-digit'});
+};
+const fmtT = ts => new Date(ts).toLocaleTimeString('cs-CZ', {hour: '2-digit', minute: '2-digit', second: '2-digit'});
+const mmss = ms => { const s = Math.floor(Math.abs(ms) / 1000); return pad(Math.floor(s / 60), 2) + ':' + pad(s % 60, 2); };
+function dur(ms) {
+  const m = Math.floor(ms / 60000), h = Math.floor(m / 60), d = Math.floor(h / 24);
+  if (ms < 60000) return Math.max(1, Math.floor(ms / 1000)) + ' s';
+  if (m < 60) return m + ' min';
+  if (h < 24) return h + ' h ' + (m % 60) + ' min';
+  return d + ' d ' + (h % 24) + ' h';
+}
+
+let S;
+const mat = id => S.materials.find(m => m.id === id);
+const P = id => S.packages[id];
+const cellById = id => S.cells.find(c => c.id === id);
+const cellUsed = c => c.items.length + c.reserved.length;
+const cellMaterial = c => { const id = c.items[0] || c.reserved[0]; return id ? P(id).mat : null; };
+function cellStatus(c) {
+  if (c.reserved.length) return 'res';
+  const u = cellUsed(c);
+  if (!u) return 'free';
+  return u >= CELLTYPE[c.type].cap[mat(cellMaterial(c)).pack] ? 'full' : 'part';
+}
+const STATUS_LABEL = {free: 'volná', part: 'částečně obsazená', full: 'plná', res: 'rezervovaná'};
+function log(text) { S.log.unshift({t: Date.now(), text}); if (S.log.length > 300) S.log.length = 300; }
+function hist(p, note) { p.history.push({t: Date.now(), state: p.state, note}); }
+
+/* ---------- ukázková data ---------- */
+// Simulace pro pohled Skladník: časovaný požadavek a pořadí skenování
+const defaultSim = () => ({requestAt: null, fired: false, putaways: 0, lastCell: null});
+function newPkg(st, matId, weight, t) {
+  const id = 'OB-' + pad(++st.seq.pkg);
+  const m = st.materials.find(x => x.id === matId);
+  st.packages[id] = {id, mat: matId, weight, state: 'PRIJEM', receivedAt: t, cell: null, target: null,
+    storedAt: null, putReason: null, fifoReason: null, allocatedTo: null, ws: null, fromCell: null,
+    deliveredAt: null, onTime: null,
+    history: [{t, state: 'PRIJEM', note: `Přijato, hmotnost ${kg(weight)} (max. ${PACK[m.pack].max} kg pro obal ${m.pack})`}]};
+  return st.packages[id];
+}
+function sampleState() {
+  const now = Date.now(), D = 864e5;
+  const materials = [
+    {id: 'M01', name: 'Šrouby M8×25', cat: 'Spojovací materiál', pack: 'A'},
+    {id: 'M02', name: 'Matice M10 samojistné', cat: 'Spojovací materiál', pack: 'A'},
+    {id: 'M03', name: 'Podložky 8,4 mm', cat: 'Spojovací materiál', pack: 'A'},
+    {id: 'M04', name: 'Pojistné kroužky 20 mm', cat: 'Spojovací materiál', pack: 'A'},
+    {id: 'M05', name: 'Ložisko 6204-2RS', cat: 'Ložiska', pack: 'A'},
+    {id: 'M06', name: 'Ložisko 6310 ZZ', cat: 'Ložiska', pack: 'B'},
+    {id: 'M07', name: 'O-kroužky NBR 32×3', cat: 'Těsnění', pack: 'A'},
+    {id: 'M08', name: 'Těsnění příruby DN50', cat: 'Těsnění', pack: 'B'},
+    {id: 'M09', name: 'Konektory 12pin', cat: 'Elektronické díly', pack: 'A'},
+    {id: 'M10', name: 'Řídicí jednotka ECU-3', cat: 'Elektronické díly', pack: 'B'},
+    {id: 'M11', name: 'Kabelové svazky KS-40', cat: 'Elektronické díly', pack: 'C'},
+    {id: 'M12', name: 'Stretch fólie 500 mm', cat: 'Obalový materiál', pack: 'C'}
+  ];
+  const cells = [];
+  RACKS.forEach(r => { for (let i = 1; i <= r.count; i++) cells.push({id: `${r.id}-${pad(i, 2)}`, rack: r.id, type: r.type, items: [], reserved: []}); });
+  const st = {version: 1, materials, cells, packages: {}, transports: [], requests: [], log: [], seq: {pkg: 0, tr: 0, req: 0}, sim: defaultSim(), dismissed: []};
+  const stored = [
+    ['R1-01', 'M11', 380, 6.2], ['R1-02', 'M12', 405, 9.1],
+    ['R2-01', 'M06', 34, 5.3], ['R2-02', 'M08', 28.5, 8.4], ['R2-05', 'M10', 22, 2.1],
+    ['R3-01', 'M01', 12.4, 12.3], ['R3-02', 'M02', 11.8, 7.2], ['R3-03', 'M03', 9.6, 4.5],
+    ['R3-04', 'M01', 13.1, 3.2], ['R3-05', 'M05', 10.2, 10.6], ['R3-06', 'M04', 6.8, 6.1],
+    ['R3-07', 'M09', 4.9, 1.4]
+  ];
+  stored.forEach(([cid, mid, w, ago]) => {
+    const t = now - ago * D;
+    const p = newPkg(st, mid, w, t - 3600e3);
+    p.state = 'SKLAD'; p.cell = cid; p.target = cid; p.storedAt = t;
+    p.putReason = {summary: 'Výchozí stav skladu (ukázková data)', steps: []};
+    p.history.push({t, state: 'SKLAD', note: `Zaskladněno v ${cid}`});
+    st.cells.find(c => c.id === cid).items.push(p.id);
+  });
+  [['M07', 8.4, 14], ['M07', 9.1, 13], ['M08', 31.5, 9], ['M12', 412, 6]]
+    .forEach(([mid, w, minAgo]) => newPkg(st, mid, w, now - minAgo * 60000));
+  st.log.unshift({t: now, text: 'Načtena ukázková data – 12 obalů ve skladu, 4 obaly na příjmu.'});
+  return st;
+}
+
+/* ---------- úložiště ---------- */
+function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(S)); } catch (e) {} }
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) { const st = JSON.parse(raw); if (st && st.version === 1 && st.cells) { if (!st.sim) st.sim = defaultSim(); if (!st.dismissed) st.dismissed = []; return st; } }
+  } catch (e) {}
+  return null;
+}
+
+/* ---------- zaskladňovací strategie ---------- */
+function findPutaway(p) {
+  const m = mat(p.mat), pack = m.pack, order = ORDER[pack];
+  const steps = [`Obal ${pack} (${PACK[pack].desc}) se smí uložit do typů buněk ${order.join(' → ')}; postupuje se od nejmenší.`];
+  for (const t of order) {
+    const ct = CELLTYPE[t], cap = ct.cap[pack];
+    const cs = S.cells.filter(c => c.type === t);
+    const lbl = `Typ ${t} – ${ct.name} (max. ${cap}× obal ${pack})`;
+    const same = cs.find(c => cellUsed(c) > 0 && cellMaterial(c) === p.mat && cellUsed(c) < cap);
+    if (same) {
+      steps.push(`${lbl}: buňka ${same.id} už obsahuje ${m.name} a má volné místo (obsazeno ${cellUsed(same)} z ${cap}) → má přednost před prázdnou buňkou.`);
+      return {cell: same, steps, summary: `Ke stejnému materiálu do ${same.id} (typ ${t}, ${ct.name})`};
+    }
+    const empty = cs.find(c => cellUsed(c) === 0);
+    if (empty) {
+      const sameExists = cs.some(c => cellUsed(c) > 0 && cellMaterial(c) === p.mat);
+      const freeCount = cs.filter(c => !cellUsed(c)).length;
+      steps.push(`${lbl}: ${sameExists ? 'buňky se stejným materiálem jsou plné' : 'žádná buňka se stejným materiálem'}; použita první prázdná buňka ${empty.id} (prázdných ${freeCount} z ${cs.length}).`);
+      return {cell: empty, steps, summary: `Prázdná buňka nejmenšího vhodného typu ${t} (${ct.name})`};
+    }
+    steps.push(`${lbl}: žádné místo – všech ${cs.length} buněk je plných, rezervovaných nebo s jiným materiálem → přechod na větší typ buňky.`);
+  }
+  steps.push('Ve skladu teď není pro tento obal žádné volné místo.');
+  return {cell: null, steps, summary: 'Bez volného místa'};
+}
+
+/* ---------- akce ---------- */
+function startPutaway(id, mode) {
+  const p = P(id); if (!p || p.state !== 'PRIJEM') return;
+  const r = findPutaway(p);
+  if (!r.cell) { toast('Ve skladu není pro tento obal volné místo.', 'err'); return; }
+  r.cell.reserved.push(p.id);
+  p.simOrd = ++S.sim.putaways; p.simWrongCell = S.sim.lastCell; S.sim.lastCell = r.cell.id;
+  p.target = r.cell.id; p.putReason = {summary: r.summary, steps: r.steps};
+  p.state = 'CESTA_SKLAD';
+  hist(p, `Rezervována buňka ${r.cell.id}; přeprava: ${MODES[mode]}`);
+  S.transports.push({id: 'T' + (++S.seq.tr), pkg: p.id, kind: 'SKLAD', mode, start: Date.now(), from: 'Příjem', to: r.cell.id});
+  log(`${p.id} (${mat(p.mat).name}) vyrazil do skladu – rezervována ${r.cell.id}, ${MODES[mode]}.`);
+  commit();
+}
+function completeTransport(trId) {
+  const tr = S.transports.find(t => t.id === trId); if (!tr) return;
+  S.transports = S.transports.filter(t => t.id !== trId);
+  const p = P(tr.pkg), now = Date.now();
+  if (tr.kind === 'SKLAD' || tr.kind === 'PRESUN') {
+    const c = cellById(tr.to);
+    c.reserved = c.reserved.filter(x => x !== p.id); c.items.push(p.id);
+    p.cell = c.id; p.state = 'SKLAD';
+    if (tr.kind === 'PRESUN') {
+      p.relocating = false;   // datum zaskladnění zůstává kvůli FIFO
+      hist(p, `Přeskladněno do ${c.id}; datum zaskladnění pro FIFO zachováno`);
+      log(`${p.id} přeskladněn z ${tr.from} do ${c.id}.`);
+      toast(`${p.id} přeskladněn do ${c.id}`);
+    } else {
+      p.storedAt = now;
+      hist(p, `Zaskladněno v ${c.id}`);
+      log(`${p.id} zaskladněn v ${c.id}.`);
+      toast(`${p.id} zaskladněn v ${c.id}`);
+    }
+  } else {
+    const rq = S.requests.find(r => r.id === tr.req);
+    p.state = 'VYROBA'; p.deliveredAt = now;
+    rq.status = 'doruceno'; rq.deliveredAt = now;
+    rq.onTime = now <= rq.created + rq.limit * 60000; p.onTime = rq.onTime;
+    hist(p, `Doručeno na ${WS[rq.ws]} (${rq.onTime ? 'včas' : 'po limitu'})`);
+    log(`${p.id} doručen na ${WS[rq.ws]} pro ${rq.id} – ${rq.onTime ? 'včas' : 'po časovém limitu'}.`);
+    toast(`${p.id} doručen na ${WS[rq.ws]}${rq.onTime ? '' : ' (po limitu)'}`, rq.onTime ? '' : 'err');
+  }
+  commit();
+}
+function allocate(rq) {
+  const cands = Object.values(S.packages)
+    .filter(p => p.state === 'SKLAD' && p.mat === rq.mat && !p.allocatedTo)
+    .sort((a, b) => a.storedAt - b.storedAt);
+  if (!cands.length) return false;
+  const p = cands[0], now = Date.now();
+  p.allocatedTo = rq.id; rq.pkg = p.id;
+  const others = cands.slice(1);
+  rq.reason = `Nejdéle ve skladu: zaskladněn ${fmt(p.storedAt)} v ${p.cell} (${dur(now - p.storedAt)}).` +
+    (others.length ? ` Novější obaly téhož materiálu: ${others.map(o => `${o.id} v ${o.cell} (${fmt(o.storedAt)})`).join(', ')}.`
+                   : ' Jiný volný obal tohoto materiálu ve skladu není.');
+  p.fifoReason = rq.reason;
+  hist(p, `Vybrán podle FIFO pro požadavek ${rq.id} (${WS[rq.ws]})`);
+  log(`FIFO: pro ${rq.id} (${WS[rq.ws]}) vybrán ${p.id} z ${p.cell}.`);
+  return true;
+}
+function createRequest(ws, matId, limit) {
+  const rq = {id: 'P-' + pad(++S.seq.req, 3), ws, mat: matId, created: Date.now(), limit, status: 'otevreny', pkg: null, reason: ''};
+  S.requests.push(rq);
+  log(`${WS[ws]} vyžádala ${mat(matId).name} (${rq.id}), limit ${limit} min.`);
+  allocate(rq);
+  commit();
+}
+function dispatch(rqId, mode) {
+  const rq = S.requests.find(r => r.id === rqId);
+  if (!rq || rq.status !== 'otevreny' || !rq.pkg) return;
+  const p = P(rq.pkg), c = cellById(p.cell);
+  c.items = c.items.filter(x => x !== p.id);
+  p.fromCell = c.id; p.cell = null; p.ws = rq.ws; p.state = 'CESTA_VYROBA';
+  hist(p, `Vyskladněno z ${c.id}, buňka uvolněna; přeprava: ${MODES[mode]}`);
+  rq.status = 'na_ceste';
+  S.transports.push({id: 'T' + (++S.seq.tr), pkg: p.id, kind: 'VYROBA', mode, start: Date.now(), from: c.id, to: WS[rq.ws], req: rq.id});
+  log(`${p.id} vyskladněn z ${c.id} pro ${WS[rq.ws]}, ${MODES[mode]}; buňka ${c.id} uvolněna.`);
+  commit();
+}
+function cancelRequest(rqId) {
+  const rq = S.requests.find(r => r.id === rqId);
+  if (!rq || rq.status !== 'otevreny') return;
+  if (rq.pkg) { const p = P(rq.pkg); p.allocatedTo = null; p.fifoReason = null; hist(p, `Uvolněn – požadavek ${rq.id} zrušen`); }
+  rq.status = 'zrusen';
+  log(`Požadavek ${rq.id} (${WS[rq.ws]}) zrušen.`);
+  commit();
+}
+function createReceipt(matId, weight) {
+  const m = mat(matId);
+  const p = newPkg(S, matId, weight, Date.now());
+  log(`Přijat ${p.id}: ${m.name}, obal ${m.pack}, ${kg(weight)}.`);
+  commit();
+  toast(`${p.id} přijat na příjmu`);
+}
+function commit() { save(); renderAll(); }
+
+/* ---------- tick ---------- */
+function tick() {
+  const fresh = load(); if (fresh) S = fresh;   // stav mohl změnit jiný panel prohlížeče
+  const now = Date.now(); let changed = false;
+  if (S.sim.requestAt && !S.sim.fired && now >= S.sim.requestAt) {
+    S.sim.fired = true;
+    log('Ukázkový scénář: Linka 1 posílá požadavek s limitem 2 minuty.');
+    createRequest('L1', 'M01', 2);
+  }
+  for (const tr of [...S.transports]) {
+    if (tr.mode === 'AGV' && now - tr.start >= AGV_MS) { completeTransport(tr.id); changed = true; }
+  }
+  for (const rq of S.requests) if (rq.status === 'otevreny' && !rq.pkg && allocate(rq)) changed = true;
+  if (changed) commit(); else if (tab === 'vedouci' && vedSig() !== lastVedSig) renderAll(); else updateLive();
+}
+function etaText(tr) {
+  const el = Date.now() - tr.start;
+  return tr.mode === 'AGV' ? `dorazí za ${Math.max(0, Math.ceil((AGV_MS - el) / 1000))} s`
+                           : `jede ${mmss(el)} · čeká na potvrzení`;
+}
+function cdInfo(rq) {
+  if (rq.status === 'doruceno') return {text: rq.onTime ? 'doručeno včas' : 'doručeno po limitu', cls: rq.onTime ? 'ok' : 'late'};
+  const rem = rq.created + rq.limit * 60000 - Date.now();
+  if (rem >= 0) return {text: `zbývá ${mmss(rem)}`, cls: rem < 60000 ? 'warn' : 'ok'};
+  return {text: `po limitu ${mmss(rem)}`, cls: 'late'};
+}
+function updateLive() {
+  const now = Date.now();
+  document.querySelectorAll('[data-progress]').forEach(el => {
+    const tr = S.transports.find(t => t.id === el.dataset.progress);
+    if (tr && tr.mode === 'AGV') el.style.width = Math.min(100, (now - tr.start) / AGV_MS * 100) + '%';
+  });
+  document.querySelectorAll('[data-eta]').forEach(el => {
+    const tr = S.transports.find(t => t.id === el.dataset.eta); if (tr) el.textContent = etaText(tr);
+  });
+  document.querySelectorAll('[data-countdown]').forEach(el => {
+    const rq = S.requests.find(r => r.id === el.dataset.countdown); if (!rq) return;
+    const i = cdInfo(rq); el.textContent = i.text; el.className = 'cd ' + i.cls;
+    const card = el.closest('.rq'); if (card) card.classList.toggle('late', i.cls === 'late');
+  });
+  document.querySelectorAll('[data-skcd]').forEach(el => {
+    const rq = S.requests.find(r => r.id === el.dataset.skcd); if (!rq) return;
+    const c = skCd(rq); el.textContent = c.t; el.className = 'sk-cd ' + c.c;
+    const card = el.closest('.sk-card'); if (card) card.classList.toggle('is-late', c.c === 'late');
+  });
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString('cs-CZ', {hour: '2-digit', minute: '2-digit', second: '2-digit'});
+}
+
+/* ---------- vykreslení ---------- */
+let tab = 'hala';
+function renderAll() {
+  const pk = Object.values(S.packages);
+  const cnt = s => pk.filter(p => p.state === s).length;
+  document.getElementById('kpis').innerHTML =
+    `<div><b>${cnt('PRIJEM')}</b>na příjmu</div>
+     <div><b>${S.transports.length}</b>na cestě</div>
+     <div><b>${cnt('SKLAD')}</b>zaskladněno</div>
+     <div><b>${S.requests.filter(r => r.status === 'otevreny' || r.status === 'na_ceste').length}</b>požadavků výroby</div>`;
+  const cur = (a, on) => on ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
+  document.querySelectorAll('.tabs a').forEach(a => cur(a, a.dataset.tab === tab));
+  const view = tab === 'skladnik' || tab === 'vedouci' ? tab : 'hala';
+  document.querySelectorAll('.viewswitch a').forEach(a => cur(a, a.dataset.view === view));
+  document.body.classList.toggle('v-sk', tab === 'skladnik');
+  document.body.classList.toggle('v-ved', tab === 'vedouci');
+  const app = document.getElementById('app');
+  if (tab === 'vedouci') lastVedSig = vedSig();
+  app.innerHTML = tab === 'vedouci' ? renderVed() : tab === 'skladnik' ? renderSk() : tab === 'obaly' ? renderPackagesPage() : tab === 'pravidla' ? renderRulesPage() : renderHall();
+  updateLive();
+}
+
+function legendHtml() {
+  return `<div class="panel legend" aria-label="Legenda">
+    <div class="item"><span class="sw free"></span>volná</div>
+    <div class="item"><span class="sw part"></span>částečně obsazená</div>
+    <div class="item"><span class="sw full"></span>plná</div>
+    <div class="item"><span class="sw res"></span>rezervovaná (obal je na cestě)</div>
+    <div class="item"><span class="pack pack-A">A</span><span class="pack pack-B">B</span><span class="pack pack-C">C</span>typ obalu</div>
+    <div class="note">AGV dokončí přesun sám za 15 s · ruční vozík čeká na potvrzení doručení</div>
+  </div>`;
+}
+function renderHall() {
+  return legendHtml() + `
+  <details class="panel howto">
+    <summary>Jak ukázku vyzkoušet</summary>
+    <ol>
+      <li>Na příjmu zaskladněte první box A s O-kroužky – půjde do poslední volné malé police R3-08.</li>
+      <li>Zaskladněte druhý box A – malé police jsou plné nebo rezervované, proto půjde do střední police v R2.</li>
+      <li>Na Lince 1 vyžádejte Šrouby M8×25 – FIFO vybere obal z R3-01, který je ve skladu nejdéle.</li>
+      <li>Zkuste nový příjem s hmotností nad limit obalu – aplikace ho nepřijme.</li>
+    </ol>
+  </details>
+  <div class="hall">
+    ${renderReceiving()}
+    ${renderLane('SKLAD')}
+    ${renderWarehouse()}
+    ${renderLane('VYROBA')}
+    ${renderProduction()}
+  </div>`;
+}
+function renderReceiving() {
+  const list = Object.values(S.packages).filter(p => p.state === 'PRIJEM').sort((a, b) => a.receivedAt - b.receivedAt);
+  return `<section class="zone" aria-label="Příjem">
+    <div class="zone-head"><h2>Příjem</h2><span class="sub">${list.length} obalů</span>
+      <button class="btn small" data-action="receipt">Nový příjem</button></div>
+    ${list.length ? list.map(p => {
+      const m = mat(p.mat), max = PACK[m.pack].max;
+      return `<article class="pcard">
+        <div class="row"><button class="pid grow" data-action="pkg" data-id="${p.id}">${p.id}</button><span class="pack pack-${m.pack}" title="Obal ${m.pack} – ${PACK[m.pack].desc}">${m.pack}</span></div>
+        <div class="pname">${esc(m.name)}</div>
+        <div class="meta">${esc(m.cat)} · přijato ${fmt(p.receivedAt)}</div>
+        <div class="wbar" title="Hmotnost vůči maximu obalu"><span style="width:${Math.min(100, p.weight / max * 100)}%"></span></div>
+        <div class="okline">${kg(p.weight)} z max. ${max} kg – v limitu</div>
+        <button class="btn primary" data-action="putaway" data-id="${p.id}">Zaskladnit</button>
+      </article>`;
+    }).join('') : `<div class="empty">Na příjmu nic nečeká. Přidejte obal tlačítkem Nový příjem.</div>`}
+  </section>`;
+}
+function renderLane(kind) {
+  const list = S.transports.filter(t => t.kind === kind || (kind === 'SKLAD' && t.kind === 'PRESUN'));
+  const title = kind === 'SKLAD' ? 'do skladu a přeskladnění' : 'Sklad → Výroba';
+  return `<section class="lane" aria-label="Na cestě: ${title}">
+    <div class="lane-head">Na cestě<span>${title}</span></div>
+    ${list.length ? list.map(tr => {
+      const p = P(tr.pkg), m = mat(p.mat);
+      const pct = tr.mode === 'AGV' ? Math.min(100, (Date.now() - tr.start) / AGV_MS * 100) : 100;
+      return `<article class="tcard m-${tr.mode}">
+        <div class="row"><button class="pid grow" data-action="pkg" data-id="${p.id}">${p.id}</button><span class="mode ${tr.mode}">${tr.mode === 'AGV' ? 'AGV' : 'Vozík'}</span></div>
+        ${tr.kind === 'PRESUN' ? '<span class="badge">Přeskladnění</span>' : ''}
+        <div class="pname" style="font-size:13.5px">${esc(m.name)}</div>
+        <div class="route">${esc(tr.from)} → <b>${esc(tr.to)}</b></div>
+        <div class="prog ${tr.mode === 'AGV' ? '' : 'manual'}"><span data-progress="${tr.id}" style="width:${pct}%"></span></div>
+        <div class="meta" data-eta="${tr.id}">${etaText(tr)}</div>
+        ${tr.mode === 'RUCNI' ? `<button class="btn small primary" data-action="confirm" data-id="${tr.id}">Potvrdit doručení</button>` : ''}
+      </article>`;
+    }).join('') : `<div class="empty">Žádný přesun</div>`}
+  </section>`;
+}
+function cellHtml(c) {
+  const st = cellStatus(c), mid = cellMaterial(c);
+  let body;
+  if (!mid) {
+    body = `<span class="cmat">volná</span><span class="ccap">${Object.entries(CELLTYPE[c.type].cap).map(([k, v]) => `${v}×${k}`).join(' / ')}</span>`;
+  } else {
+    const m = mat(mid), cap = CELLTYPE[c.type].cap[m.pack];
+    let pips = '';
+    for (let i = 0; i < cap; i++) pips += `<span class="pip ${i < c.items.length ? 'on' : i < cellUsed(c) ? 'rs' : ''}"></span>`;
+    body = `<span class="cmat">${esc(m.name)}</span><span class="pips" title="${cellUsed(c)} z ${cap} obalů ${m.pack}">${pips}</span>`;
+  }
+  const alloc = c.items.some(id => P(id).allocatedTo);
+  return `<button class="cell ${st}" data-action="cell" data-id="${c.id}" aria-label="${c.id}, ${STATUS_LABEL[st]}">
+    <span class="cid">${c.id}</span>${body}${alloc ? '<span class="flag" title="Obal vybrán pro požadavek výroby">FIFO</span>' : ''}</button>`;
+}
+function renderWarehouse() {
+  const tot = S.cells.length, cnt = s => S.cells.filter(c => cellStatus(c) === s).length;
+  return `<section class="zone" aria-label="Sklad">
+    <div class="zone-head"><h2>Sklad</h2>
+      <div class="stats"><span><b>${cnt('free')}</b> volných</span><span><b>${cnt('part')}</b> částečně</span><span><b>${cnt('full')}</b> plných</span><span><b>${cnt('res')}</b> rezervovaných</span><span>z ${tot} buněk</span></div></div>
+    ${RACKS.map(r => `<div class="rack">
+      <div class="rack-head"><h3>Regál ${r.id}</h3><span>${r.count}× ${CELLTYPE[r.type].name} (typ ${r.type})</span></div>
+      <div class="cells" style="--cw:${r.cw};--ch:${r.ch}">${S.cells.filter(c => c.rack === r.id).map(cellHtml).join('')}</div>
+    </div>`).join('')}
+  </section>`;
+}
+function renderProduction() {
+  return `<section class="zone" aria-label="Výroba">
+    <div class="zone-head"><h2>Výroba</h2><span class="sub">${S.requests.filter(r => r.status === 'otevreny').length} otevřených požadavků</span></div>
+    ${Object.entries(WS).map(([k, name]) => {
+      const open = S.requests.filter(r => r.ws === k && (r.status === 'otevreny' || r.status === 'na_ceste'));
+      const done = S.requests.filter(r => r.ws === k && r.status === 'doruceno').sort((a, b) => b.deliveredAt - a.deliveredAt).slice(0, 3);
+      return `<div class="ws">
+        <div class="ws-head"><h3>${name}</h3><button class="btn small" data-action="request" data-ws="${k}">Vyžádat materiál</button></div>
+        ${open.length ? open.map(rqHtml).join('') : `<div class="meta">Žádný otevřený požadavek.</div>`}
+        ${done.length ? `<div class="done"><div class="meta">Ve výrobě</div>${done.map(r => `<div class="row"><button class="pid" data-action="pkg" data-id="${r.pkg}">${r.pkg}</button><span class="grow">${esc(mat(r.mat).name)}</span><span class="tag ${r.onTime ? 'ok' : 'late'}">${r.onTime ? 'včas' : 'pozdě'}</span></div>`).join('')}</div>` : ''}
+      </div>`;
+    }).join('')}
+  </section>`;
+}
+function rqHtml(rq) {
+  const m = mat(rq.mat), cd = cdInfo(rq);
+  let inner;
+  if (rq.status === 'na_ceste') {
+    const tr = S.transports.find(t => t.req === rq.id);
+    inner = `<div class="meta">Obal <button class="pid" data-action="pkg" data-id="${rq.pkg}">${rq.pkg}</button> je na cestě${tr ? ' (' + (tr.mode === 'AGV' ? 'AGV' : 'ruční vozík') + ')' : ''}.</div>`;
+  } else if (rq.pkg) {
+    const p = P(rq.pkg);
+    inner = `<div class="why"><b>FIFO → <button class="pid" data-action="pkg" data-id="${p.id}">${p.id}</button> z ${p.cell}.</b> ${esc(rq.reason)}</div>
+      <div class="acts"><span class="meta">Vyskladnit:</span>
+        <button class="btn small agv" data-action="dispatch" data-id="${rq.id}" data-mode="AGV">AGV</button>
+        <button class="btn small" data-action="dispatch" data-id="${rq.id}" data-mode="RUCNI">Ruční vozík</button>
+        <button class="btn small ghost" data-action="cancel-req" data-id="${rq.id}">Zrušit</button></div>`;
+  } else {
+    inner = `<div class="why wait">Materiál není ve skladu k dispozici. Požadavek se přiřadí, jakmile bude obal zaskladněn.</div>
+      <div class="acts"><button class="btn small ghost" data-action="cancel-req" data-id="${rq.id}">Zrušit</button></div>`;
+  }
+  return `<div class="rq ${cd.cls === 'late' ? 'late' : ''}">
+    <div class="row"><span class="grow"><b>${rq.id}</b> · ${esc(m.name)} <span class="pack pack-${m.pack}">${m.pack}</span></span><span class="cd ${cd.cls}" data-countdown="${rq.id}">${cd.text}</span></div>
+    <div class="meta">Vyžádáno ${fmtT(rq.created)}, limit ${rq.limit} min</div>
+    ${inner}
+  </div>`;
+}
+
+function location_(p) {
+  switch (p.state) {
+    case 'PRIJEM': return 'Příjem';
+    case 'CESTA_SKLAD': return p.relocating ? `${p.fromCell} → ${p.target} (přeskladnění)` : `Příjem → ${p.target}`;
+    case 'SKLAD': return p.cell;
+    case 'CESTA_VYROBA': return `${p.fromCell} → ${WS[p.ws]}`;
+    case 'VYROBA': return WS[p.ws];
+  }
+}
+function renderPackagesPage() {
+  const list = Object.values(S.packages).slice().reverse();
+  return `<div class="page">
+    <h2>Obaly a události</h2>
+    <p class="lead">Všechny obaly s aktuálním stavem a umístěním. Kliknutím na řádek zobrazíte historii obalu a důvod výběru buňky nebo FIFO.</p>
+    <div class="grid2">
+      <div class="panel box"><h3>Obaly (${list.length})</h3><div class="tw"><table>
+        <thead><tr><th>Obal</th><th>Materiál</th><th class="c">Typ</th><th>Hmotnost</th><th>Stav</th><th>Umístění</th><th>Zaskladněno</th></tr></thead>
+        <tbody>${list.map(p => { const m = mat(p.mat); return `<tr class="clk" data-action="pkg" data-id="${p.id}">
+          <td><b>${p.id}</b></td><td>${esc(m.name)}</td><td class="c"><span class="pack pack-${m.pack}">${m.pack}</span></td><td>${kg(p.weight)}</td>
+          <td><span class="st ${p.state}">${STATES[p.state]}</span></td><td>${esc(location_(p))}</td><td>${p.storedAt ? fmt(p.storedAt) : '–'}</td></tr>`; }).join('')}</tbody>
+      </table></div></div>
+      <div class="panel box"><h3>Deník událostí</h3><div class="log">
+        ${S.log.map(l => `<div><time>${fmt(l.t).split(' ').slice(-1)[0]} ${new Date(l.t).toLocaleDateString('cs-CZ', {day: 'numeric', month: 'numeric'})}</time><span>${esc(l.text)}</span></div>`).join('')}
+      </div></div>
+    </div>
+  </div>`;
+}
+function renderRulesPage() {
+  return `<div class="page">
+    <h2>Pravidla</h2>
+    <p class="lead">Tabulky, podle kterých aplikace kontroluje příjem, vybírá buňky a vyskladňuje. Hodnoty se načítají přímo z konfigurace aplikace.</p>
+    <div class="grid2">
+      <div class="panel box"><h3>Tok materiálu a stavy obalu</h3>
+        <div class="flow">${Object.entries(STATES).map(([k, v], i) => `${i ? '<span aria-hidden="true">→</span>' : ''}<span class="st ${k}">${v}</span>`).join('')}</div>
+        <p class="meta" style="margin-top:10px">Materiál se pohybuje z příjmu do skladu a ze skladu do výroby (Linka 1, Linka 2, Montáž).</p>
+      </div>
+      <div class="panel box"><h3>Typy obalů</h3><div class="tw"><table>
+        <thead><tr><th>Obal</th><th>Popis</th><th>Max. hmotnost</th></tr></thead>
+        <tbody>${Object.entries(PACK).map(([k, v]) => `<tr><td><span class="pack pack-${k}">${k}</span></td><td>${v.desc}</td><td>${v.max} kg</td></tr>`).join('')}</tbody>
+      </table></div><p class="meta">Při příjmu se kontroluje, že hmotnost obalu s materiálem nepřekračuje maximum typu obalu, který je materiálu určen.</p></div>
+      <div class="panel box"><h3>Typy buněk a kapacita</h3><div class="tw"><table>
+        <thead><tr><th>Typ buňky</th><th class="c">Obal A</th><th class="c">Obal B</th><th class="c">Obal C</th></tr></thead>
+        <tbody>${[5, 3, 1].map(t => `<tr><td>${t} – ${CELLTYPE[t].name}</td>${['A', 'B', 'C'].map(k => `<td class="c">${CELLTYPE[t].cap[k] || '–'}</td>`).join('')}</tr>`).join('')}</tbody>
+      </table></div><p class="meta">V jedné buňce může být více obalů, ale jen se stejným materiálem.</p></div>
+      <div class="panel box"><h3>Zaskladňovací strategie</h3><ol class="steps">
+        <li>Vhodné typy buněk se procházejí od nejmenší po největší: obal A ${ORDER.A.join(' → ')}, obal B ${ORDER.B.join(' → ')}, obal C ${ORDER.C.join(' → ')}.</li>
+        <li>V rámci typu má přednost buňka, ve které už je stejný materiál a zbývá v ní místo; jinak se použije prázdná buňka.</li>
+        <li>Na větší typ buňky se přejde, jen když v menším žádné místo není.</li>
+        <li>Vybraná buňka se rezervuje, dokud obal nedorazí. Rezervace se počítá do obsazenosti.</li>
+      </ol></div>
+      <div class="panel box"><h3>Vyskladnění pro výrobu (FIFO)</h3><ol class="steps">
+        <li>Pracoviště vyžádá materiál s časovým limitem doručení (výchozí 5 minut).</li>
+        <li>Aplikace vybere obal daného materiálu, který je ve skladu nejdéle (nejstarší datum zaskladnění), a zobrazí důvod.</li>
+        <li>Buňka se uvolní v okamžiku vyskladnění, tedy při zahájení přesunu do výroby.</li>
+        <li>Není-li materiál skladem, požadavek čeká a obal se přiřadí hned po zaskladnění.</li>
+      </ol></div>
+      <div class="panel box"><h3>Přeskladnění (pohled Vedoucí)</h3><ol class="steps">
+        <li>Ideální buňka pro obal je nejmenší vhodný typ: obal A typ 5, obal B typ 3, obal C typ 1.</li>
+        <li>Když se uvolní menší buňka, aplikace navrhne přesun obalu, který leží ve větší buňce; cíl volí stejně jako zaskladňovací strategie.</li>
+        <li>Po přijetí se cílová buňka rezervuje a původní uvolní; přesun jede AGV nebo ručním vozíkem.</li>
+        <li>Datum zaskladnění se při přeskladnění nemění, takže FIFO zůstává správné.</li>
+      </ol></div>
+      <div class="panel box"><h3>Přeprava</h3><div class="tw"><table>
+        <thead><tr><th>Způsob</th><th>Dokončení přesunu</th></tr></thead>
+        <tbody><tr><td><span class="mode AGV">AGV</span></td><td>automaticky po ${AGV_MS / 1000} sekundách</td></tr>
+        <tr><td><span class="mode">Vozík</span> ručně vedený</td><td>po potvrzení doručení obsluhou</td></tr></tbody>
+      </table></div></div>
+      <div class="panel box"><h3>Barvy buněk</h3><div class="tw"><table><tbody>
+        <tr><td><span class="sw free" style="display:inline-block"></span></td><td>volná – bez obalu i rezervace</td></tr>
+        <tr><td><span class="sw part" style="display:inline-block"></span></td><td>částečně obsazená – je v ní materiál a ještě volné místo</td></tr>
+        <tr><td><span class="sw full" style="display:inline-block"></span></td><td>plná – kapacita pro daný obal je vyčerpaná</td></tr>
+        <tr><td><span class="sw res" style="display:inline-block"></span></td><td>rezervovaná – míří do ní obal z příjmu</td></tr>
+      </tbody></table></div></div>
+      <div class="panel box"><h3>Materiály</h3><div class="tw"><table>
+        <thead><tr><th>Kód</th><th>Materiál</th><th>Skupina</th><th class="c">Obal</th></tr></thead>
+        <tbody>${S.materials.map(m => `<tr><td>${m.id}</td><td>${esc(m.name)}</td><td>${esc(m.cat)}</td><td class="c"><span class="pack pack-${m.pack}">${m.pack}</span></td></tr>`).join('')}</tbody>
+      </table></div></div>
+    </div>
+  </div>`;
+}
+
+/* ---------- pohled Vedoucí ---------- */
+const idealType = pack => ORDER[pack][0];
+const inLargerCell = () => Object.values(S.packages)
+  .filter(p => p.state === 'SKLAD' && cellById(p.cell).type !== idealType(mat(p.mat).pack));
+
+// Návrhy přeskladnění: obal ve větší buňce, pro který se uvolnila menší buňka podle zaskladňovací strategie
+function recommendations() {
+  const virt = {};
+  const used = c => cellUsed(c) + (virt[c.id] ? virt[c.id].n : 0);
+  const matOf = c => cellMaterial(c) || (virt[c.id] && virt[c.id].mat);
+  const cands = inLargerCell().filter(p => !p.allocatedTo).sort((a, b) =>
+    (ORDER[mat(b.mat).pack].indexOf(cellById(b.cell).type) - ORDER[mat(a.mat).pack].indexOf(cellById(a.cell).type)) || (a.storedAt - b.storedAt));
+  const out = [];
+  for (const p of cands) {
+    const m = mat(p.mat), order = ORDER[m.pack], from = cellById(p.cell);
+    let to = null, how = '';
+    for (const t of order.slice(0, order.indexOf(from.type))) {
+      const cap = CELLTYPE[t].cap[m.pack], cs = S.cells.filter(c => c.type === t);
+      const same = cs.find(c => used(c) > 0 && matOf(c) === p.mat && used(c) < cap);
+      if (same) { to = same; how = 'same'; break; }
+      const empty = cs.find(c => used(c) === 0);
+      if (empty) { to = empty; how = 'empty'; break; }
+    }
+    if (!to) continue;
+    const key = p.id + '>' + to.id;
+    if (S.dismissed.includes(key)) continue;
+    virt[to.id] = {n: (virt[to.id] ? virt[to.id].n : 0) + 1, mat: p.mat};
+    const it = idealType(m.pack), rest = from.items.length - 1;
+    const reason = `${p.id} (${m.name}, obal ${m.pack}) je v ${from.id} – ${CELLTYPE[from.type].name}, typ ${from.type}. Pro obal ${m.pack} je ideální typ ${it} – ${CELLTYPE[it].name}. ` +
+      (how === 'same' ? `V ${to.id} už je stejný materiál a zbývá v ní místo, má proto přednost.`
+                      : `Buňka ${to.id} (${CELLTYPE[to.type].name}, typ ${to.type}) je volná a je první vhodnou menší buňkou podle strategie.`) +
+      (rest ? ` V ${from.id} zůstane ${rest} obal stejného materiálu.` : ` Buňka ${from.id} se uvolní pro větší obaly.`);
+    out.push({key, pkg: p, from, to, reason});
+  }
+  return out;
+}
+function startRelocation(pkgId, toId, mode) {
+  const p = P(pkgId), to = cellById(toId);
+  const rec = recommendations().find(r => r.pkg.id === pkgId && r.to.id === toId);
+  if (!p || p.state !== 'SKLAD' || p.allocatedTo || !rec) { toast('Doporučení už neplatí – stav skladu se mezitím změnil.', 'err'); renderAll(); return; }
+  const from = cellById(p.cell);
+  from.items = from.items.filter(x => x !== p.id);
+  to.reserved.push(p.id);
+  p.fromCell = from.id; p.cell = null; p.target = to.id; p.state = 'CESTA_SKLAD'; p.relocating = true; p.simOrd = null;
+  p.putReason = {summary: `Přeskladnění z ${from.id} do ${to.id} (doporučení přijato vedoucím)`, steps: [rec.reason]};
+  hist(p, `Přeskladnění ${from.id} → ${to.id}, buňka ${to.id} rezervována; přeprava: ${MODES[mode]}`);
+  S.transports.push({id: 'T' + (++S.seq.tr), pkg: p.id, kind: 'PRESUN', mode, start: Date.now(), from: from.id, to: to.id});
+  log(`Vedoucí přijal doporučení: ${p.id} se přeskladňuje z ${from.id} do ${to.id} (${MODES[mode]}).`);
+  commit();
+  toast(`Přeskladnění ${p.id}: ${from.id} → ${to.id} zahájeno`);
+}
+function atRisk() {
+  const now = Date.now();
+  return S.requests.filter(r => r.status === 'otevreny' || r.status === 'na_ceste').map(r => {
+    const rem = skDeadline(r) - now;
+    const why = rem < 0 ? 'po limitu' : rem < 60000 ? 'méně než minuta do limitu'
+      : (r.status === 'otevreny' && !r.pkg) ? 'materiál není skladem' : null;
+    return why && {r, why, rem};
+  }).filter(Boolean).sort((a, b) => a.rem - b.rem);
+}
+function vedSig() {
+  return JSON.stringify([recommendations().map(r => r.key), atRisk().map(x => x.r.id + x.why),
+    S.transports.map(t => t.id), S.requests.map(r => r.status), S.cells.map(c => cellUsed(c))]);
+}
+const recSeen = {};
+function renderVed() {
+  const now = Date.now();
+  // 1) obsazenost podle typu buněk
+  const occ = [5, 3, 1].map(t => {
+    const cs = S.cells.filter(c => c.type === t), n = s => cs.filter(c => cellStatus(c) === s).length;
+    const f = {full: n('full'), part: n('part'), res: n('res'), free: n('free')};
+    const busy = cs.length - f.free;
+    const seg = k => f[k] ? `<span class="${k}" style="flex:${f[k]}" title="${STATUS_LABEL[k]}: ${f[k]}"></span>` : '';
+    return `<div class="occ"><div class="occ-head"><span>Typ ${t} – ${CELLTYPE[t].name}</span><b>${Math.round(busy / cs.length * 100)} %</b></div>
+      <div class="obar">${seg('full')}${seg('part')}${seg('res')}${seg('free')}</div>
+      <div class="meta">${busy} z ${cs.length} buněk obsazeno · plné ${f.full}, částečně ${f.part}, rezervované ${f.res}</div></div>`;
+  }).join('');
+  // 2) na cestě
+  const tr = S.transports, tk = k => tr.filter(t => t.kind === k).length;
+  // 3) větší buňka
+  const big = inLargerCell();
+  // 4) včas
+  const done = S.requests.filter(r => r.status === 'doruceno'), ok = done.filter(r => r.onTime).length;
+  const risk = atRisk();
+  const recs = recommendations();
+  recs.forEach(r => { if (!recSeen[r.key]) recSeen[r.key] = now; });
+
+  return `<div class="page ved">
+  <div class="ved-kpis">
+    <section class="panel box kpi"><h3>Obsazenost skladu</h3>${occ}</section>
+    <section class="panel box kpi"><h3>Obaly na cestě</h3>
+      <div class="kbig">${tr.length}</div>
+      <dl class="kl"><dt>do skladu</dt><dd>${tk('SKLAD')}</dd><dt>do výroby</dt><dd>${tk('VYROBA')}</dd><dt>přeskladnění</dt><dd>${tk('PRESUN')}</dd>
+      <dt>AGV / vozík</dt><dd>${tr.filter(t => t.mode === 'AGV').length} / ${tr.filter(t => t.mode === 'RUCNI').length}</dd></dl></section>
+    <section class="panel box kpi"><h3>Ve větší buňce, než je ideální</h3>
+      <div class="kbig ${big.length ? 'warn' : ''}">${big.length}</div>
+      ${big.length ? `<ul class="kli">${big.map(p => { const m = mat(p.mat); return `<li><button class="pid" data-action="pkg" data-id="${p.id}">${p.id}</button> ${esc(m.name)} – v ${p.cell} (typ ${cellById(p.cell).type}), ideálně typ ${idealType(m.pack)}</li>`; }).join('')}</ul>`
+        : '<p class="meta">Všechny obaly leží v nejmenším vhodném typu buňky.</p>'}</section>
+    <section class="panel box kpi"><h3>Doručeno včas</h3>
+      <div class="kbig ${done.length && ok < done.length ? 'warn' : ''}">${done.length ? Math.round(ok / done.length * 100) + ' %' : '–'}</div>
+      <p class="meta">${done.length ? `${ok} z ${done.length} doručených požadavků` : 'Zatím žádný doručený požadavek'}</p>
+      <h4>Ohrožené požadavky (${risk.length})</h4>
+      ${risk.length ? `<ul class="kli risk">${risk.map(x => `<li><span><b>${x.r.id}</b> ${WS[x.r.ws]} · ${esc(mat(x.r.mat).name)}<br><span class="meta">${x.why}${x.r.status === 'na_ceste' ? ' · na cestě' : ''}</span></span>
+        <span class="sk-cd ${skCd(x.r).c}" data-skcd="${x.r.id}">${skCd(x.r).t}</span></li>`).join('')}</ul>`
+        : '<p class="meta">Žádný požadavek není ohrožen.</p>'}
+      <p class="meta small">Ohrožený = po limitu, méně než minuta do limitu, nebo materiál není skladem.</p></section>
+  </div>
+  <div class="ved-main">
+    <section class="panel box"><h3>Doporučení</h3>
+      ${recs.length ? recs.map(r => { const m = mat(r.pkg.mat); return `<article class="rec">
+        <div class="rec-head">${now - recSeen[r.key] < 60000 ? '<span class="tagnew">Nové</span>' : ''}<span>Přeskladnit <button class="pid" data-action="pkg" data-id="${r.pkg.id}">${r.pkg.id}</button> · ${esc(m.name)} <span class="pack pack-${m.pack}">${m.pack}</span></span></div>
+        <div class="rec-move"><span class="cellchip">${r.from.id}<small>typ ${r.from.type}</small></span><span aria-hidden="true">→</span><span class="cellchip to">${r.to.id}<small>typ ${r.to.type}</small></span></div>
+        <p class="why">${esc(r.reason)}</p>
+        <div class="acts"><button class="btn agv" data-action="rec-accept" data-id="${r.pkg.id}" data-key="${r.to.id}" data-mode="AGV">Přijmout – AGV</button>
+          <button class="btn primary" data-action="rec-accept" data-id="${r.pkg.id}" data-key="${r.to.id}" data-mode="RUCNI">Přijmout – ruční vozík</button>
+          <button class="btn ghost" data-action="rec-dismiss" data-key="${r.key}">Skrýt</button></div></article>`; }).join('')
+      : `<div class="empty">Žádné doporučení. Když se uvolní menší buňka, kterou může využít obal uložený zbytečně ve větší buňce, objeví se tu návrh na přeskladnění.</div>`}
+    </section>
+    <section class="panel box"><h3>Probíhající přesuny</h3>
+      ${tr.length ? `<div class="vtr">${tr.map(t => { const p = P(t.pkg); return `<div class="vtr-row">
+        <div class="row"><button class="pid" data-action="pkg" data-id="${p.id}">${p.id}</button><span class="grow">${esc(mat(p.mat).name)}</span><span class="mode ${t.mode}">${t.mode === 'AGV' ? 'AGV' : 'Vozík'}</span></div>
+        <div class="route">${{SKLAD: 'Zaskladnění', VYROBA: 'Do výroby', PRESUN: 'Přeskladnění'}[t.kind]}: ${esc(t.from)} → <b>${esc(t.to)}</b></div>
+        <div class="prog ${t.mode === 'AGV' ? '' : 'manual'}"><span data-progress="${t.id}" style="width:${t.mode === 'AGV' ? Math.min(100, (now - t.start) / AGV_MS * 100) : 100}%"></span></div>
+        <div class="meta" data-eta="${t.id}">${etaText(t)}</div></div>`; }).join('')}</div>` : '<div class="empty">Nic není na cestě.</div>'}
+      <h3 style="margin-top:16px">Poslední události</h3>
+      <div class="log short">${S.log.slice(0, 8).map(l => `<div><time>${fmtT(l.t)}</time><span>${esc(l.text)}</span></div>`).join('')}</div>
+    </section>
+  </div></div>`;
+}
+let lastVedSig = '';
+/* ---------- pohled Skladník ---------- */
+const ui = {screen: 'list', scanned: {}, known: null};
+const skDeadline = rq => rq.created + rq.limit * 60000;
+function skCd(rq) {
+  const rem = skDeadline(rq) - Date.now();
+  if (rem >= 60000) return {t: `zbývá ${mmss(rem)}`, c: 'ok'};
+  if (rem >= 0) return {t: `zbývá ${mmss(rem)}`, c: 'last'};
+  return {t: `zpoždění +${mmss(rem)}`, c: 'late'};
+}
+function skTasks() {
+  const sup = [], put = [];
+  S.requests.forEach(rq => {
+    if (rq.status === 'otevreny') sup.push({key: 'V:' + rq.id, kind: 'V', rq, ready: !!rq.pkg, deadline: skDeadline(rq)});
+    else if (rq.status === 'na_ceste') {
+      const tr = S.transports.find(t => t.req === rq.id);
+      if (tr && tr.mode === 'RUCNI') sup.push({key: 'V:' + rq.id, kind: 'V', rq, ready: true, inprog: true, deadline: skDeadline(rq)});
+    }
+  });
+  // zásobování výroby: nejdřív proveditelné, pak podle nejbližšího limitu
+  sup.sort((a, b) => (b.ready - a.ready) || (a.deadline - b.deadline));
+  S.transports.filter(t => (t.kind === 'SKLAD' || t.kind === 'PRESUN') && t.mode === 'RUCNI')
+    .forEach(tr => put.push({key: 'Z:' + tr.pkg, kind: 'Z', pkg: P(tr.pkg), ready: true, inprog: true}));
+  Object.values(S.packages).filter(p => p.state === 'PRIJEM').sort((a, b) => a.receivedAt - b.receivedAt)
+    .forEach(p => put.push({key: 'Z:' + p.id, kind: 'Z', pkg: p, ready: true}));
+  return [...sup, ...put];
+}
+const findTask = key => skTasks().find(t => t.key === key);
+function taskStep(t) {
+  if (t.kind === 'V') {
+    if (t.rq.status === 'na_ceste') return 'deliver';
+    if (!t.rq.pkg) return 'wait';
+    return ui.scanned[t.key] ? 'mode' : 'scan';
+  }
+  if (t.pkg.state === 'CESTA_SKLAD') return 'cell';
+  return ui.scanned[t.key] ? 'mode' : 'scan';
+}
+// Simulovaná čtečka: deterministické kódy; při 2. zaskladnění napoprvé chybná buňka
+function simCode(t, step) {
+  if (step === 'scan') return t.kind === 'V' ? t.rq.pkg : t.pkg.id;
+  if (step === 'cell') {
+    const p = t.pkg;
+    if (p.simOrd === 2 && !p.simWrongDone) {
+      if (p.simWrongCell && p.simWrongCell !== p.target) return p.simWrongCell;
+      const i = S.cells.findIndex(c => c.id === p.target);
+      return S.cells[i + 1 < S.cells.length ? i + 1 : i - 1].id;
+    }
+    return p.target;
+  }
+  return null;
+}
+function ensureSimTimer() { if (!S.sim.requestAt && !S.sim.fired) { S.sim.requestAt = Date.now() + 30000; save(); } }
+
+function renderSk() {
+  ensureSimTimer();
+  const tasks = skTasks();
+  if (ui.screen !== 'list' && !tasks.find(t => t.key === ui.screen)) ui.screen = 'list';
+  setTimeout(checkNewRequests, 0);
+  return ui.screen === 'list' ? skList(tasks) : skTask(findTask(ui.screen));
+}
+function skBar(inner) { return `<div class="sk-bar"><div class="sk-bar-in">${inner}</div></div>`; }
+const skHint = code => code ? `<div class="sk-hint">Simulovaná čtečka přečte: <b>${esc(code)}</b></div>` : '';
+
+function skCard(t, firstKey) {
+  const first = t.key === firstKey, isNew = ui.fresh && ui.fresh.has(t.key);
+  const tag = (first ? '<span class="sk-next">Další úkol</span>' : '') + (isNew ? '<span class="sk-new">Nový</span>' : '');
+  if (t.kind === 'V') {
+    const rq = t.rq, m = mat(rq.mat), cd = skCd(rq), p = rq.pkg && P(rq.pkg);
+    const sub = !rq.pkg ? 'Čeká na materiál – není skladem'
+      : t.inprog ? `Rozpracováno · doveď ${rq.pkg} na ${WS[rq.ws]}` : `Obal ${rq.pkg} · buňka ${p.cell}`;
+    return `<button class="sk-card V ${first ? 'first' : ''} ${t.ready ? '' : 'off'} ${cd.c === 'late' ? 'is-late' : ''}" data-action="sk-open" data-key="${t.key}">
+      ${tag}<span class="sk-type">Zásobování výroby · ${WS[rq.ws]}</span>
+      <span class="sk-main">${esc(m.name)}</span><span class="sk-sub">${sub}</span>
+      <span class="sk-cd ${cd.c}" data-skcd="${rq.id}">${cd.t}</span></button>`;
+  }
+  const p = t.pkg, m = mat(p.mat);
+  const sub = p.relocating ? `Obal ${p.id} · z ${p.fromCell} do ${p.target}` : t.inprog ? `Rozpracováno · ulož do buňky ${p.target}` : `Obal ${p.id} · na příjmu · obal ${m.pack}`;
+  return `<button class="sk-card Z ${first ? 'first' : ''}" data-action="sk-open" data-key="${t.key}">
+    ${tag}<span class="sk-type">${p.relocating ? 'Přeskladnění' : 'Zaskladnění'}</span>
+    <span class="sk-main">${esc(m.name)}</span><span class="sk-sub">${sub}</span></button>`;
+}
+function skList(tasks) {
+  const top = tasks.find(t => t.ready), firstKey = top && top.key;
+  const sup = tasks.filter(t => t.kind === 'V'), put = tasks.filter(t => t.kind === 'Z');
+  let html = `<div class="sk-title">Úkoly <span>${tasks.length}</span></div>`;
+  if (!tasks.length) html += `<div class="sk-empty">Žádné úkoly. Nový úkol se ozve sám – zvukem, vibrací a žlutým pruhem.</div>`;
+  if (sup.length) html += `<div class="sk-group">Zásobování výroby – má přednost</div><div class="sk-list">${sup.map(t => skCard(t, firstKey)).join('')}</div>`;
+  if (put.length) html += `<div class="sk-group">Zaskladnění</div><div class="sk-list">${put.map(t => skCard(t, firstKey)).join('')}</div>`;
+  let bar = '';
+  if (top) {
+    const step = taskStep(top), scans = step === 'scan' || step === 'cell';
+    bar = scans ? skHint(simCode(top, step)) + `<button class="sk-btn main" data-action="sk-scan">Naskenovat</button>`
+                : `<button class="sk-btn main" data-action="sk-open" data-key="${top.key}">Otevřít další úkol</button>`;
+  }
+  return html + (bar ? skBar(bar) : '');
+}
+function skReason(title, body) { return `<div class="sk-reason"><b>${esc(title)}</b>${body}</div>`; }
+function skTask(t) {
+  const step = taskStep(t);
+  let head, body = '', bar = '';
+  const back = `<button class="sk-backbtn" data-action="sk-back">‹ Úkoly</button>`;
+  if (t.kind === 'V') {
+    const rq = t.rq, m = mat(rq.mat), cd = skCd(rq), p = rq.pkg && P(rq.pkg);
+    head = `<div class="sk-head">${back}<span class="sk-type">Zásobování · ${WS[rq.ws]} · ${rq.id}</span></div>
+      <span class="sk-cd ${cd.c}" data-skcd="${rq.id}">${cd.t}</span>`;
+    if (step === 'scan') {
+      body = `<div class="sk-label">Jdi do buňky</div><div class="sk-big">${p.cell}</div>
+        <div class="sk-text">Vezmi obal <b>${p.id}</b> · ${esc(m.name)}</div>
+        ${skReason('Proč tento obal (FIFO)', `<div>${esc(rq.reason)}</div>`)}`;
+      bar = skHint(simCode(t, step)) + `<button class="sk-btn main" data-action="sk-scan">Naskenovat obal</button>`;
+    } else if (step === 'mode') {
+      body = `<div class="sk-label">Obal načten</div><div class="sk-big mid">${p.id}</div>
+        <div class="sk-text">${esc(m.name)} z buňky ${p.cell}. Jak ho dopravíš na ${WS[rq.ws]}?</div>
+        <div class="sk-text" style="margin-top:8px">Buňka ${p.cell} se uvolní hned po volbě přepravy.</div>`;
+      bar = `<button class="sk-btn agv" data-action="sk-mode" data-mode="AGV">Předat AGV</button>
+        <button class="sk-btn main" data-action="sk-mode" data-mode="RUCNI">Vezu vozíkem</button>`;
+    } else if (step === 'deliver') {
+      body = `<div class="sk-label">Doveď obal na</div><div class="sk-big mid">${WS[rq.ws]}</div>
+        <div class="sk-text">Obal <b>${rq.pkg}</b> · ${esc(m.name)}</div>`;
+      bar = `<button class="sk-btn main" data-action="sk-deliver">Potvrdit doručení</button>`;
+    } else {
+      body = `<div class="sk-label">Materiál není skladem</div>
+        <div class="sk-text">${esc(m.name)} teď ve skladu není. Úkol se uvolní, jakmile bude obal zaskladněn.</div>`;
+      bar = `<button class="sk-btn" data-action="sk-back">Zpět na úkoly</button>`;
+    }
+  } else {
+    const p = t.pkg, m = mat(p.mat);
+    const higher = skTasks().find(x => x.kind === 'V' && x.ready);
+    const prio = higher ? `<button class="sk-prio" data-action="sk-open" data-key="${higher.key}">Přednost má zásobování: ${WS[higher.rq.ws]} · ${esc(mat(higher.rq.mat).name)}<span class="sk-cd" data-skcd="${higher.rq.id}">${skCd(higher.rq).t}</span></button>` : '';
+    head = prio + `<div class="sk-head">${back}<span class="sk-type">Zaskladnění · ${p.id}</span></div>`;
+    if (step === 'scan') {
+      body = `<div class="sk-label">Na příjmu naskenuj obal</div><div class="sk-big mid">${p.id}</div>
+        <div class="sk-text">${esc(m.name)} · obal ${m.pack} · ${kg(p.weight)}</div>`;
+      bar = skHint(simCode(t, step)) + `<button class="sk-btn main" data-action="sk-scan">Naskenovat obal</button>`;
+    } else if (step === 'mode') {
+      const r = findPutaway(p);
+      if (!r.cell) {
+        body = `<div class="sk-label">Není kam uložit</div><div class="sk-reason err"><b>Ve skladu není pro obal ${m.pack} volné místo.</b></div>`;
+        bar = `<button class="sk-btn" data-action="sk-back">Zpět na úkoly</button>`;
+      } else {
+        body = `<div class="sk-label">Ulož do buňky</div><div class="sk-big">${r.cell.id}</div>
+          <div class="sk-text">Obal <b>${p.id}</b> · ${esc(m.name)}</div>
+          ${skReason(r.summary, `<ol>${r.steps.map(x => `<li>${esc(x)}</li>`).join('')}</ol>`)}`;
+        bar = `<button class="sk-btn agv" data-action="sk-mode" data-mode="AGV">Předat AGV</button>
+          <button class="sk-btn main" data-action="sk-mode" data-mode="RUCNI">Vezu vozíkem</button>`;
+      }
+    } else {
+      body = `<div class="sk-label">Odvez obal do buňky</div><div class="sk-big">${p.target}</div>
+        <div class="sk-text">Obal <b>${p.id}</b> · ${esc(m.name)}</div>
+        ${p.putReason ? skReason(p.putReason.summary, `<ol>${p.putReason.steps.map(x => `<li>${esc(x)}</li>`).join('')}</ol>`) : ''}`;
+      bar = skHint(simCode(t, step)) + `<button class="sk-btn main" data-action="sk-scan">Naskenovat buňku</button>`;
+    }
+  }
+  return head + body + skBar(bar);
+}
+
+function skScan() {
+  let t;
+  if (ui.screen === 'list') {
+    t = skTasks().find(x => x.ready);
+    if (!t) { skFlash('err', 'Není co skenovat', 'Žádný úkol teď nečeká na naskenování.'); return; }
+    ui.screen = t.key;
+  } else t = findTask(ui.screen);
+  if (!t) { ui.screen = 'list'; renderAll(); return; }
+  const step = taskStep(t);
+  if (step === 'scan') {
+    const code = simCode(t, step), p = P(code);
+    ui.scanned[t.key] = true;
+    hist(p, 'Naskenován skladníkem'); save(); renderAll(); window.scrollTo(0, 0);
+    if (t.kind === 'V') skFlash('ok', `Obal ${code} načten`, `Správný obal podle FIFO z buňky ${p.cell}. Vyber způsob přepravy.`);
+    else { const r = findPutaway(p); skFlash(r.cell ? 'ok' : 'err', `Obal ${code} načten`, r.cell ? `Patří do buňky ${r.cell.id}.` : 'Ve skladu pro něj není volné místo.'); }
+    return;
+  }
+  if (step === 'cell') {
+    const p = t.pkg, code = simCode(t, step);
+    if (code !== p.target) {
+      p.simWrongDone = true;
+      hist(p, `Naskenována buňka ${code} – nesouhlasí s cílem ${p.target}, uložení zamítnuto`);
+      log(`Skladník naskenoval pro ${p.id} chybnou buňku ${code}, obal patří do ${p.target}.`);
+      save(); renderAll();
+      skFlash('err', `Špatná buňka ${code}`, `Uložení není povoleno. Obal ${p.id} patří do buňky:`, p.target);
+      return;
+    }
+    const tr = S.transports.find(x => x.pkg === p.id && (x.kind === 'SKLAD' || x.kind === 'PRESUN'));
+    ui.screen = 'list'; completeTransport(tr.id); window.scrollTo(0, 0);
+    skFlash('ok', `${p.relocating ? 'Přeskladněno do' : 'Zaskladněno v'} ${p.target}`, `Obal ${p.id} · ${mat(p.mat).name}`);
+    return;
+  }
+  renderAll();
+}
+function skMode(mode) {
+  const t = findTask(ui.screen); if (!t) return;
+  delete ui.scanned[t.key];
+  if (t.kind === 'Z') {
+    const p = t.pkg;
+    startPutaway(p.id, mode);
+    if (p.state !== 'CESTA_SKLAD') return;
+    if (mode === 'AGV') { ui.screen = 'list'; renderAll(); skFlash('ok', 'Předáno AGV', `Obal ${p.id} jede do buňky ${p.target}. Buňka je rezervovaná.`); }
+    else skFlash('ok', `Buňka ${p.target} rezervována`, `Odvez obal ${p.id} a u buňky ji naskenuj.`);
+  } else {
+    const rq = t.rq, cell = P(rq.pkg).cell;
+    dispatch(rq.id, mode);
+    if (mode === 'AGV') { ui.screen = 'list'; renderAll(); }
+    skFlash('ok', `Vyskladněno z ${cell}`, mode === 'AGV' ? `AGV veze obal na ${WS[rq.ws]}. Buňka ${cell} je volná.` : `Buňka ${cell} je volná. Doveď obal na ${WS[rq.ws]}.`);
+  }
+  window.scrollTo(0, 0);
+}
+function skDeliver() {
+  const t = findTask(ui.screen); if (!t) return;
+  const rq = t.rq, tr = S.transports.find(x => x.req === rq.id); if (!tr) return;
+  ui.screen = 'list'; completeTransport(tr.id); window.scrollTo(0, 0);
+  const diff = rq.deliveredAt - skDeadline(rq);
+  skFlash('ok', `Doručeno na ${WS[rq.ws]}`, rq.onTime ? `Včas, ${mmss(diff)} před limitem.` : `Po limitu o ${mmss(diff)}.`);
+}
+
+let flashTimer;
+function skFlash(kind, title, text, big) {
+  const r = document.getElementById('sk-flash');
+  r.innerHTML = `<div class="sk-flash ${kind}" role="alert" data-action="sk-flash-close">
+    <div class="ic" aria-hidden="true">${kind === 'ok' ? '✓' : '✕'}</div><h2>${esc(title)}</h2>
+    <p>${esc(text)}</p>${big ? `<div class="bigc">${esc(big)}</div>` : ''}
+    <button data-action="sk-flash-close">${kind === 'ok' ? 'OK' : 'Rozumím'}</button></div>`;
+  clearTimeout(flashTimer);
+  if (kind === 'ok') flashTimer = setTimeout(() => { r.innerHTML = ''; }, 1800);
+  vibrate(kind === 'ok' ? 80 : [200, 100, 200, 100, 200]);
+}
+function vibrate(p) { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} }
+function beep() {
+  try {
+    const C = window.AudioContext || window.webkitAudioContext; if (!C) return;
+    const a = beep.ctx || (beep.ctx = new C());
+    [0, 0.22, 0.44].forEach(d => {
+      const o = a.createOscillator(), g = a.createGain();
+      o.frequency.value = 988; o.connect(g); g.connect(a.destination);
+      g.gain.setValueAtTime(0.25, a.currentTime + d); o.start(a.currentTime + d); o.stop(a.currentTime + d + 0.14);
+    });
+  } catch (e) {}
+}
+function checkNewRequests() {
+  if (tab !== 'skladnik') return;
+  if (!ui.known) { ui.known = new Set(S.requests.map(r => r.id)); return; }
+  const fresh = S.requests.filter(r => !ui.known.has(r.id) && r.status === 'otevreny');
+  S.requests.forEach(r => ui.known.add(r.id));
+  if (!fresh.length) return;
+  ui.fresh = new Set(fresh.map(r => 'V:' + r.id));
+  const rq = fresh[fresh.length - 1], m = mat(rq.mat);
+  const pos = skTasks().findIndex(t => t.key === 'V:' + rq.id) + 1;
+  document.getElementById('sk-alert').innerHTML = `<div class="sk-alert" role="alert"><div class="sk-alert-in">
+    <h2>Nový úkol pro výrobu</h2>
+    <p><b>${WS[rq.ws]}</b> potřebuje ${esc(m.name)} do ${rq.limit} min. Má přednost před zaskladněním – v pořadí je ${pos}.</p>
+    <div class="row2"><button class="sk-btn main" data-action="sk-open" data-key="V:${rq.id}">Otevřít úkol</button>
+    <button class="sk-btn" data-action="sk-alert-close">Rozumím</button></div></div></div>`;
+  vibrate([300, 150, 300, 150, 300]); beep();
+  if (ui.screen === 'list') renderAll();
+}
+function skClearAlert() { document.getElementById('sk-alert').innerHTML = ''; ui.fresh = null; }
+function skClear() { skClearAlert(); document.getElementById('sk-flash').innerHTML = ''; }
+
+/* ---------- modály ---------- */
+function openModal(html, onMount) {
+  const root = document.getElementById('modal-root');
+  root.innerHTML = `<div class="backdrop" data-backdrop><div class="modal" role="dialog" aria-modal="true">${html}</div></div>`;
+  if (onMount) onMount(root.querySelector('.modal'));
+  const f = root.querySelector('select, input, .btn.primary, .btn'); if (f) f.focus();
+}
+function closeModal() { document.getElementById('modal-root').innerHTML = ''; }
+
+function putawayModal(id) {
+  const p = P(id), m = mat(p.mat), r = findPutaway(p);
+  openModal(`<button class="btn ghost x" data-action="close" aria-label="Zavřít">✕</button>
+    <h2>Zaskladnit ${p.id}</h2>
+    <div class="meta">${esc(m.name)} · obal ${m.pack} (${PACK[m.pack].desc}) · ${kg(p.weight)}</div>
+    ${r.cell ? `<div class="target"><b>${r.cell.id}</b><span>${esc(r.summary)}</span></div>` : `<div class="msg err">Ve skladu není pro tento obal volné místo.</div>`}
+    <h3 style="font-size:17px;margin:4px 0 6px">Proč tato buňka</h3>
+    <ol class="steps">${r.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol>
+    ${r.cell ? `<p class="meta">Po zahájení přesunu se buňka ${r.cell.id} rezervuje, dokud obal nedorazí.</p>
+    <div class="choice">
+      <button class="btn agv" data-action="putaway-go" data-id="${p.id}" data-mode="AGV">Poslat AGV<small>Přesun se dokončí sám za 15 s.</small></button>
+      <button class="btn primary" data-action="putaway-go" data-id="${p.id}" data-mode="RUCNI">Ručně vedený vozík<small>Doručení potvrdíte na kartě přesunu.</small></button>
+    </div>` : `<div class="foot"><button class="btn" data-action="close">Zavřít</button></div>`}`);
+}
+function receiptModal() {
+  const opts = S.materials.map(m => `<option value="${m.id}">${esc(m.name)} – obal ${m.pack}</option>`).join('');
+  openModal(`<button class="btn ghost x" data-action="close" aria-label="Zavřít">✕</button>
+    <h2>Nový příjem</h2>
+    <div class="meta">Obal se zapíše na příjem. Hmotnost se kontroluje proti maximu typu obalu.</div>
+    <div class="field"><label for="f-mat">Materiál</label><select id="f-mat">${opts}</select></div>
+    <div class="field"><label for="f-w">Hmotnost obalu s materiálem (kg)</label><input id="f-w" type="number" min="0" step="0.1" inputmode="decimal" placeholder="např. 12,5"></div>
+    <div id="f-msg" class="msg" hidden></div>
+    <div class="foot"><button class="btn" data-action="close">Zrušit</button><button class="btn primary" id="f-ok" disabled>Přijmout obal</button></div>`,
+  el => {
+    const sel = el.querySelector('#f-mat'), w = el.querySelector('#f-w'), msg = el.querySelector('#f-msg'), ok = el.querySelector('#f-ok');
+    const check = () => {
+      const m = mat(sel.value), max = PACK[m.pack].max, v = parseFloat(String(w.value).replace(',', '.'));
+      msg.hidden = false;
+      if (w.value === '' || isNaN(v)) { msg.className = 'msg'; msg.textContent = `Obal ${m.pack} (${PACK[m.pack].desc}) unese nejvýše ${max} kg.`; ok.disabled = true; return null; }
+      if (v <= 0) { msg.className = 'msg err'; msg.textContent = 'Zadejte hmotnost větší než 0 kg.'; ok.disabled = true; return null; }
+      if (v > max) { msg.className = 'msg err'; msg.textContent = `Hmotnost ${kg(v)} překračuje maximum ${max} kg pro obal ${m.pack}. Rozdělte materiál do více obalů.`; ok.disabled = true; return null; }
+      msg.className = 'msg ok'; msg.textContent = `${kg(v)} z max. ${max} kg pro obal ${m.pack} – v limitu.`; ok.disabled = false; return v;
+    };
+    sel.addEventListener('change', check); w.addEventListener('input', check); check();
+    ok.addEventListener('click', () => { const v = check(); if (v != null) { closeModal(); createReceipt(sel.value, Math.round(v * 10) / 10); } });
+    w.addEventListener('keydown', e => { if (e.key === 'Enter') ok.click(); });
+  });
+}
+function requestModal(ws) {
+  const stock = id => Object.values(S.packages).filter(p => p.state === 'SKLAD' && p.mat === id && !p.allocatedTo).length;
+  const opts = S.materials.map(m => `<option value="${m.id}">${esc(m.name)} (k dispozici ${stock(m.id)})</option>`).join('');
+  openModal(`<button class="btn ghost x" data-action="close" aria-label="Zavřít">✕</button>
+    <h2>Požadavek – ${WS[ws]}</h2>
+    <div class="meta">Aplikace vybere obal podle FIFO a ukáže, proč ho vybrala.</div>
+    <div class="field"><label for="r-mat">Materiál</label><select id="r-mat">${opts}</select></div>
+    <div class="field"><label for="r-lim">Časový limit doručení (min)</label><input id="r-lim" type="number" min="1" max="240" step="1" value="5"></div>
+    <div class="foot"><button class="btn" data-action="close">Zrušit</button><button class="btn primary" id="r-ok">Vyžádat materiál</button></div>`,
+  el => {
+    el.querySelector('#r-ok').addEventListener('click', () => {
+      let lim = parseInt(el.querySelector('#r-lim').value, 10); if (!(lim > 0)) lim = 5;
+      const mid = el.querySelector('#r-mat').value; closeModal(); createRequest(ws, mid, Math.min(lim, 240));
+    });
+  });
+}
+function cellModal(id) {
+  const c = cellById(id), st = cellStatus(c), mid = cellMaterial(c), m = mid && mat(mid);
+  const row = (pid, extra) => { const p = P(pid); return `<tr class="clk" data-action="pkg" data-id="${pid}"><td><b>${pid}</b></td><td>${extra(p)}</td></tr>`; };
+  openModal(`<button class="btn ghost x" data-action="close" aria-label="Zavřít">✕</button>
+    <h2>Buňka ${c.id}</h2>
+    <dl class="kv">
+      <dt>Typ</dt><dd>${c.type} – ${CELLTYPE[c.type].name}</dd>
+      <dt>Kapacita</dt><dd>${Object.entries(CELLTYPE[c.type].cap).map(([k, v]) => `${v}× obal ${k}`).join(', ')}</dd>
+      <dt>Stav</dt><dd>${STATUS_LABEL[st]}</dd>
+      <dt>Materiál</dt><dd>${m ? `${esc(m.name)} (obal ${m.pack}) – obsazeno ${cellUsed(c)} z ${CELLTYPE[c.type].cap[m.pack]}` : '–'}</dd>
+    </dl>
+    ${c.items.length ? `<h3 style="font-size:17px">Uložené obaly</h3><div class="tw"><table><tbody>${c.items.map(pid => row(pid, p => `zaskladněn ${fmt(p.storedAt)} · ${dur(Date.now() - p.storedAt)} ve skladu${p.allocatedTo ? ` · vybrán pro ${p.allocatedTo}` : ''}`)).join('')}</tbody></table></div>` : ''}
+    ${c.reserved.length ? `<h3 style="font-size:17px;margin-top:10px">Rezervace</h3><div class="tw"><table><tbody>${c.reserved.map(pid => row(pid, () => (P(pid).relocating ? `přeskladnění z ${P(pid).fromCell}` : 'obal je na cestě z příjmu'))).join('')}</tbody></table></div>` : ''}
+    ${!c.items.length && !c.reserved.length ? '<p class="meta">Buňka je prázdná.</p>' : ''}`);
+}
+function pkgModal(id) {
+  const p = P(id); if (!p) return; const m = mat(p.mat);
+  openModal(`<button class="btn ghost x" data-action="close" aria-label="Zavřít">✕</button>
+    <h2>Obal ${p.id}</h2>
+    <dl class="kv">
+      <dt>Materiál</dt><dd>${esc(m.name)} (${esc(m.cat)})</dd>
+      <dt>Obal</dt><dd><span class="pack pack-${m.pack}">${m.pack}</span> ${PACK[m.pack].desc}, max. ${PACK[m.pack].max} kg</dd>
+      <dt>Hmotnost</dt><dd>${kg(p.weight)}</dd>
+      <dt>Stav</dt><dd><span class="st ${p.state}">${STATES[p.state]}</span></dd>
+      <dt>Umístění</dt><dd>${esc(location_(p))}</dd>
+      ${p.storedAt ? `<dt>Zaskladněno</dt><dd>${fmt(p.storedAt)}</dd>` : ''}
+    </dl>
+    ${p.putReason ? `<h3 style="font-size:17px">Proč buňka ${p.target}</h3><div class="why"><b>${esc(p.putReason.summary)}</b>${p.putReason.steps.length ? `<ol class="steps">${p.putReason.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol>` : ''}</div>` : ''}
+    ${p.fifoReason ? `<h3 style="font-size:17px;margin-top:10px">Proč vybrán pro výrobu (FIFO)</h3><div class="why">${esc(p.fifoReason)}</div>` : ''}
+    <h3 style="font-size:17px;margin-top:12px">Historie</h3>
+    <div class="hist">${p.history.map(h => `<div><time>${fmt(h.t)}</time><span class="st ${h.state}">${STATES[h.state]}</span> ${esc(h.note)}</div>`).join('')}</div>`);
+}
+function resetModal() {
+  openModal(`<h2>Obnovit ukázková data?</h2>
+    <p>Všechny změny se smažou a sklad, příjem i výroba se vrátí do výchozího stavu.</p>
+    <div class="foot"><button class="btn" data-action="close">Zrušit</button><button class="btn primary" data-action="reset">Obnovit ukázková data</button></div>`);
+}
+
+function toast(text, kind = '') {
+  if (tab === 'skladnik') return;
+  const el = document.createElement('div'); el.className = 'toast ' + kind; el.textContent = text;
+  document.getElementById('toasts').appendChild(el); setTimeout(() => el.remove(), 4200);
+}
+
+/* ---------- události ---------- */
+document.addEventListener('click', e => {
+  if (e.target.matches('[data-backdrop]')) { closeModal(); return; }
+  const a = e.target.closest('[data-action]'); if (!a) return;
+  const {action, id, mode, ws, key} = a.dataset;
+  switch (action) {
+    case 'putaway': putawayModal(id); break;
+    case 'putaway-go': closeModal(); startPutaway(id, mode); break;
+    case 'confirm': completeTransport(id); break;
+    case 'receipt': receiptModal(); break;
+    case 'request': requestModal(ws); break;
+    case 'dispatch': dispatch(id, mode); break;
+    case 'cancel-req': cancelRequest(id); break;
+    case 'cell': cellModal(id); break;
+    case 'pkg': pkgModal(id); break;
+    case 'close': closeModal(); break;
+    case 'reset-ask': resetModal(); break;
+    case 'reset':
+      S = sampleState(); closeModal(); skClear(); ui.screen = 'list'; ui.scanned = {}; ui.known = null;
+      commit(); if (tab === 'skladnik') skFlash('ok', 'Ukázková data obnovena', 'Sklad, úkoly, pořadí skenování i časovaný požadavek jsou ve výchozím stavu.'); else toast('Ukázková data obnovena');
+      break;
+    case 'sk-open': ui.screen = key; skClearAlert(); renderAll(); window.scrollTo(0, 0); break;
+    case 'rec-accept': startRelocation(id, key, mode); break;
+    case 'rec-dismiss': S.dismissed.push(key); log(`Vedoucí skryl doporučení ${key.replace('>', ' → ')}.`); commit(); break;
+    case 'sk-back': ui.screen = 'list'; renderAll(); break;
+    case 'sk-scan': skScan(); break;
+    case 'sk-mode': skMode(mode); break;
+    case 'sk-deliver': skDeliver(); break;
+    case 'sk-flash-close': document.getElementById('sk-flash').innerHTML = ''; break;
+    case 'sk-alert-close': skClearAlert(); break;
+  }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+const isPhone = () => matchMedia('(max-width: 760px), (pointer: coarse) and (max-width: 1024px)').matches;
+function route() {
+  const h = location.hash.replace('#', '');
+  tab = ['hala', 'obaly', 'pravidla', 'skladnik', 'vedouci'].includes(h) ? h : (isPhone() ? 'skladnik' : 'hala');
+  if (tab !== 'skladnik') skClear();
+  renderAll();
+}
+window.addEventListener('hashchange', route);
+window.addEventListener('storage', e => {
+  if (e.key !== STORAGE_KEY || !e.newValue) return;
+  try { S = JSON.parse(e.newValue); if (!S.sim) S.sim = defaultSim(); renderAll(); } catch (err) {}
+});
+
+try {
+  S = load() || sampleState();
+  route();
+} catch (e) {
+  console.error(e);
+  S = sampleState();
+  route();
+  toast('Uložená data nešla načíst – načtena ukázková data.', 'err');
+}
+save();
+setInterval(() => { try { tick(); } catch (e) { console.error(e); } }, 500);
+</script>
+</body>
+</html>

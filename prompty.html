@@ -1,0 +1,69 @@
+<!DOCTYPE html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Použité prompty – Trask-Intralog</title><style>
+:root{--bg:#FFFFFF;--ink:#002233;--muted:#667A85;--blue:#0055FF;--panel:#F2F6FF;--line:#D5DEE8;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#0B1B24;--ink:#EAF1F6;--muted:#9FB0BC;--blue:#5C8DFF;--panel:#132A36;--line:#24404F;color-scheme:dark}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;line-height:1.5}
+main{max-width:760px;margin:0 auto;padding:32px 20px 48px}
+.kicker{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+h1{font-size:30px;line-height:1.15;margin:8px 0 12px}h2{font-size:20px;margin:28px 0 8px;color:var(--blue)}
+p{margin:0 0 14px}.muted{color:var(--muted);font-size:14px}
+.btn{display:block;text-decoration:none;font-weight:700;font-size:18px;padding:18px 20px;border-radius:8px;margin:12px 0;text-align:center}
+.primary{background:var(--blue);color:#fff}.secondary{background:var(--panel);color:var(--ink);border:1px solid var(--line)}
+.note{background:var(--panel);border-left:5px solid var(--blue);padding:14px 16px;border-radius:4px;margin:24px 0;font-size:15px}
+pre{white-space:pre-wrap;word-wrap:break-word;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px;font-family:inherit;font-size:15px;margin:0 0 10px}
+button{font:inherit;font-weight:700;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px;padding:8px 14px;cursor:pointer}
+a.back{color:var(--blue)}
+</style></head><body><main><a class="back" href="index.html">← Zpět</a><div class="kicker" style="margin-top:16px">Manufacturing Forum 2026</div><h1>Použité prompty</h1><p>Prototyp vznikl třemi prompty zadanými postupně ve stejné konverzaci. První vytvořil halu, další dva aplikaci rozšířily o pohled skladníka a vedoucího.</p><h2>Prompt 1: Hala</h2><pre id="p1">Vytvoř HTML prototyp aplikace Trask-Intralog pro řízení skladu a intralogistiky ve středně velkém výrobním podniku. Aplikace má být v jednom HTML souboru, fungovat v prohlížeči bez instalace a být v češtině. Data se ukládají v prohlížeči, aby si uživatel mohl aplikaci vyzkoušet a změny mu zůstaly. Přidej tlačítko „Obnovit ukázková data“, které vrátí aplikaci do výchozího stavu.
+
+TOK MATERIÁLU
+Materiál se pohybuje mezi třemi místy: příjem → sklad → výroba. Každý obal prochází stavy: Na příjmu → Na cestě do skladu → Zaskladněno → Na cestě do výroby → Ve výrobě.
+
+TYPY OBALŮ
+| Obal | Popis | Max. hmotnost |
+| A | malý přepravní box | 15 kg |
+| B | velký přepravní box | 40 kg |
+| C | paleta | 800 kg |
+Každý materiál má určený typ obalu. Při příjmu aplikace zkontroluje, že hmotnost obalu s materiálem nepřekračuje maximum pro daný typ obalu.
+
+TYPY BUNĚK A KAPACITA
+Tabulka udává, kolik obalů daného typu se vejde do jedné buňky (– znamená nelze):
+| Typ buňky | Obal A | Obal B | Obal C |
+| 5 – malá police | 1 | – | – |
+| 3 – střední police | 2 | 1 | – |
+| 1 – paletové místo | 4 | 2 | 1 |
+V jedné buňce může být více obalů, ale jen se stejným materiálem.
+
+ZASKLADŇOVACÍ STRATEGIE
+Při zaskladnění aplikace sama určí cílovou buňku:
+1. Projde vhodné typy buněk od nejmenší po největší (obal A: 5, pak 3, pak 1; obal B: 3, pak 1; obal C: 1).
+2. V rámci typu buňky dá přednost buňce, ve které už je stejný materiál a zbývá v ní místo, jinak použije prázdnou buňku.
+3. Na větší typ buňky přejde, jen když v menším žádné místo není.
+Jakmile je cílová buňka určena, aplikace ji rezervuje, dokud materiál nedorazí. U každého zaskladnění zobraz, proč byla buňka vybrána.
+
+VYSKLADNĚNÍ PRO VÝROBU
+Výroba má tři pracoviště: Linka 1, Linka 2 a Montáž. Pracoviště si vyžádá materiál a aplikace podle pravidla FIFO vybere obal, který je ve skladu nejdéle, a zobrazí, proč byl vybrán. Buňka se uvolní v okamžiku vyskladnění. Každý požadavek výroby má časový limit pro doručení, výchozí hodnota je 5 minut, a u požadavku se zobrazuje zbývající čas.
+
+PŘEPRAVA
+Každý přesun jede buď ručně vedeným vozíkem, nebo AGV; uživatel způsob zvolí při zahájení přesunu. Přesun AGV se dokončí sám po 15 sekundách, ruční přesun čeká na potvrzení doručení.
+
+HLAVNÍ OBRAZOVKA
+Rozložení haly ve třech zónách zleva doprava: Příjem, Sklad s mřížkou regálů a buňkami barevně podle stavu (volná, částečně obsazená, plná, rezervovaná), Výroba se třemi pracovišti a otevřenými požadavky. Mezi zónami je pruh „Na cestě“ s kartami probíhajících přesunů a ukazatelem průběhu. Přidej legendu barev a záložku s tabulkami pravidel, aby šla zkontrolovat.
+
+UKÁZKOVÁ DATA
+– Sklad: regál R1 se 4 paletovými místy (typ 1), regál R2 se 6 středními policemi (typ 3), regál R3 s 8 malými policemi (typ 5).
+– Asi 10 materiálů (spojovací materiál, ložiska, těsnění, elektronické díly, obalový materiál), každý s určeným typem obalu.
+– V regálu R3 je volná jen jedna malá police, ostatní jsou obsazené materiály, které na příjmu nejsou.
+– Na příjmu čekají: dva boxy A stejného materiálu, který ve skladu zatím není, jeden velký box B a jedna paleta C.
+– Jeden materiál je ve skladu ve dvou obalech s různým datem zaskladnění, aby šlo ukázat FIFO.
+Díky tomu první box A půjde do poslední volné malé police a druhý box A už do střední police.</pre><button onclick="cp('p1',this)">Kopírovat prompt</button><h2>Prompt 2: Skladník v telefonu</h2><pre id="p2">Přidej do aplikace druhý pohled: Skladník. Nahoře bude přepínač pohledů Hala | Skladník. Oba pohledy pracují se stejnými daty, takže co skladník udělá v telefonu, se hned projeví v hale. Když se aplikace otevře na telefonu, spustí se rovnou v pohledu Skladník.
+
+Pohled Skladník je určený pro mobilní telefon, jednou rukou a i v pracovních rukavicích: jeden sloupec na výšku, velká tlačítka na dosah palce ve spodní části obrazovky, velké písmo a vysoký kontrast. Obaly i buňky se načítají tlačítkem „Naskenovat“, které simuluje čtečku čárových kódů. Každá akce skončí jasným potvrzením přes celou šířku obrazovky, zeleným při úspěchu a červeným při chybě.
+
+Skladník vidí seznam úkolů seřazený podle priority. Zásobování výroby má vždy přednost před zaskladněním a u úkolů pro výrobu běží odpočet do vypršení limitu: zelený, v poslední minutě červený, po vypršení výrazné zpoždění. Nový požadavek se okamžitě zařadí podle priority a skladník to pozná bez dívání se na seznam.
+
+Zaskladnění: po naskenování obalu aplikace velkým písmem ukáže cílovou buňku a důvod volby. Pokud skladník naskenuje jinou buňku, uložení nepovolí a ukáže, kam obal patří.
+
+Pro ukázku: simulace skenování prochází v pevném pořadí a při druhém zaskladnění skladník napoprvé naskenuje špatnou buňku. 30 sekund po spuštění přijde požadavek z Linky 1 s limitem 2 minuty, aby bylo vidět, jak předběhne rozpracované zaskladnění. „Obnovit ukázková data“ vrátí do výchozího stavu i pořadí skenování a časování požadavku.</pre><button onclick="cp('p2',this)">Kopírovat prompt</button><h2>Prompt 3: Přehled vedoucího</h2><pre id="p3">Přidej třetí pohled: Vedoucí, primárně pro počítač, na telefonu přehledně čitelný. Přepínač nahoře bude Hala | Skladník | Vedoucí, stále nad stejnými daty.
+
+Nahoře hlavní ukazatele: obsazenost skladu podle typu buněk, počet obalů na cestě, počet obalů uložených v buňce větší, než by podle strategie bylo ideální, a podíl požadavků výroby doručených včas se seznamem ohrožených požadavků.
+
+Přidej panel „Doporučení“: když se uvolní menší buňka, aplikace navrhne přeskladnění obalu, který je zbytečně ve větší buňce. Vedoucí může doporučení jedním tlačítkem přijmout a vznikne z něj přesun, který se zobrazí v pruhu „Na cestě“ v hale.</pre><button onclick="cp('p3',this)">Kopírovat prompt</button><div class="note">Ukázkový prototyp vytvořený pomocí AI pro přednášku „Vibecoding jako cesta k rychlému prototypu“ na Manufacturing Forum 2026. Všechna data jsou smyšlená. Nejde o produkční aplikaci a data se ukládají jen ve vašem prohlížeči.</div><script>function cp(id,b){var t=document.getElementById(id).innerText;try{navigator.clipboard.writeText(t).then(function(){b.textContent="Zkopírováno";setTimeout(function(){b.textContent="Kopírovat prompt"},1500)})}catch(e){}}</script></main></body></html>
